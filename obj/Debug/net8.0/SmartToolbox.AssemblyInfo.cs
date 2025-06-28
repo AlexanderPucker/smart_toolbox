@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartToolbox")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0066143ad81e068b0cfc01d91fc98af55bdad81")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+242b19b75093c6904cfcde38aadffbb959ddc1f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartToolbox")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartToolbox")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
