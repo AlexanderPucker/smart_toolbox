@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "PersonalToolbox/1.0.0": {
+      "SmartToolbox/1.0.0": {
         "dependencies": {
           "Avalonia": "11.3.2",
           "Avalonia.Desktop": "11.3.2",
@@ -16,7 +16,7 @@
           "CommunityToolkit.Mvvm": "8.2.1"
         },
         "runtime": {
-          "PersonalToolbox.dll": {}
+          "SmartToolbox.dll": {}
         }
       },
       "Avalonia/11.3.2": {
@@ -455,7 +455,7 @@
     }
   },
   "libraries": {
-    "PersonalToolbox/1.0.0": {
+    "SmartToolbox/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

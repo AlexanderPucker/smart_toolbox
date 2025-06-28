@@ -1469,11 +1469,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\projects\\Avalonia\\demo\\PersonalToolbox\\PersonalToolbox.csproj",
-      "projectName": "PersonalToolbox",
-      "projectPath": "E:\\projects\\Avalonia\\demo\\PersonalToolbox\\PersonalToolbox.csproj",
+      "projectUniqueName": "E:\\projects\\smart_toolbox\\SmartToolbox.csproj",
+      "projectName": "SmartToolbox",
+      "projectPath": "E:\\projects\\smart_toolbox\\SmartToolbox.csproj",
       "packagesPath": "C:\\Users\\huang\\.nuget\\packages\\",
-      "outputPath": "E:\\projects\\Avalonia\\demo\\PersonalToolbox\\obj\\",
+      "outputPath": "E:\\projects\\smart_toolbox\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\huang\\AppData\\Roaming\\NuGet\\NuGet.Config"

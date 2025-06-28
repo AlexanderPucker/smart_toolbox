@@ -4,10 +4,10 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
-using PersonalToolbox.ViewModels;
-using PersonalToolbox.Views;
+using SmartToolbox.ViewModels;
+using SmartToolbox.Views;
 
-namespace PersonalToolbox;
+namespace SmartToolbox;
 
 public partial class App : Application
 {

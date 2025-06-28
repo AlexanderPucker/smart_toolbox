@@ -1,7 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="PersonalToolbox.App"
-             xmlns:local="using:PersonalToolbox"
+             x:Class="SmartToolbox.App"
+             xmlns:local="using:SmartToolbox"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 

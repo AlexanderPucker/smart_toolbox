@@ -1,4 +1,4 @@
-# 个人工具箱 - PersonalToolbox
+# 智能工具箱 - SmartToolbox
 
 一个基于 Avalonia UI 框架的跨平台个人工具箱应用程序，提供日常开发和办公中常用的实用工具。
 
@@ -65,7 +65,7 @@
 1. 克隆项目到本地
 2. 进入项目目录：
    ```bash
-   cd PersonalToolbox
+   cd smart_toolbox
    ```
 
 3. 还原依赖：
@@ -86,7 +86,7 @@
 ## 项目结构
 
 ```
-PersonalToolbox/
+smart_toolbox/
 ├── Views/              # 视图文件
 │   ├── MainWindow.axaml           # 主窗口
 │   ├── MainWindow.axaml.cs
@@ -102,7 +102,7 @@ PersonalToolbox/
 ├── App.axaml.cs
 ├── Program.cs          # 程序入口点
 ├── ViewLocator.cs      # 视图定位器
-└── PersonalToolbox.csproj # 项目文件
+└── SmartToolbox.csproj # 项目文件
 ```
 
 ## 添加新工具
@@ -114,7 +114,7 @@ PersonalToolbox/
 ```xml
 <!-- Views/YourToolView.axaml -->
 <UserControl xmlns="https://github.com/avaloniaui"
-             x:Class="PersonalToolbox.Views.YourToolView">
+             x:Class="SmartToolbox.Views.YourToolView">
     <!-- 您的工具界面 -->
 </UserControl>
 ```
@@ -124,7 +124,7 @@ PersonalToolbox/
 // Views/YourToolView.axaml.cs
 using Avalonia.Controls;
 
-namespace PersonalToolbox.Views;
+namespace SmartToolbox.Views;
 
 public partial class YourToolView : UserControl
 {
@@ -147,7 +147,7 @@ public partial class YourToolView : UserControl
 
 2. 在 `CreateToolContent()` 方法中添加对应的视图：
    ```csharp
-   "您的工具" => new PersonalToolbox.Views.YourToolView(),
+   "您的工具" => new SmartToolbox.Views.YourToolView(),
    ```
 
 ## 许可证

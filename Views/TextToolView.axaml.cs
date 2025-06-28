@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace PersonalToolbox.Views;
+namespace SmartToolbox.Views;
 
 public partial class TextToolView : UserControl
 {

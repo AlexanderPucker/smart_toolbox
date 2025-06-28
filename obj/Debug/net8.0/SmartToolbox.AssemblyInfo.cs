@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("PersonalToolbox")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("SmartToolbox")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
-[assembly: System.Reflection.AssemblyProductAttribute("PersonalToolbox")]
-[assembly: System.Reflection.AssemblyTitleAttribute("PersonalToolbox")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0066143ad81e068b0cfc01d91fc98af55bdad81")]
+[assembly: System.Reflection.AssemblyProductAttribute("SmartToolbox")]
+[assembly: System.Reflection.AssemblyTitleAttribute("SmartToolbox")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // 由 MSBuild WriteCodeFragment 类生成。

@@ -14,16 +14,16 @@ build_property.InvariantGlobalization =
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
-build_property.RootNamespace = PersonalToolbox
-build_property.ProjectDir = E:\projects\Avalonia\demo\PersonalToolbox\
+build_property.RootNamespace = SmartToolbox
+build_property.ProjectDir = E:\projects\smart_toolbox\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 
-[E:/projects/Avalonia/demo/PersonalToolbox/App.axaml]
+[E:/projects/smart_toolbox/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[E:/projects/Avalonia/demo/PersonalToolbox/Views/MainWindow.axaml]
+[E:/projects/smart_toolbox/Views/MainWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[E:/projects/Avalonia/demo/PersonalToolbox/Views/TextToolView.axaml]
+[E:/projects/smart_toolbox/Views/TextToolView.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

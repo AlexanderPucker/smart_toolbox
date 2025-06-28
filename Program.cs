@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace PersonalToolbox;
+namespace SmartToolbox;
 
 sealed class Program
 {

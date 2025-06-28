@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ipEnTgi4crI=",
+  "dgSpecHash": "/QjbYglYUz4=",
   "success": true,
-  "projectFilePath": "E:\\projects\\Avalonia\\demo\\PersonalToolbox\\PersonalToolbox.csproj",
+  "projectFilePath": "E:\\projects\\smart_toolbox\\SmartToolbox.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\huang\\.nuget\\packages\\avalonia\\11.3.2\\avalonia.11.3.2.nupkg.sha512",
     "C:\\Users\\huang\\.nuget\\packages\\avalonia.angle.windows.natives\\2.1.25547.20250602\\avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",

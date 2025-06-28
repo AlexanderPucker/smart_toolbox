@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace PersonalToolbox.ViewModels;
+namespace SmartToolbox.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {

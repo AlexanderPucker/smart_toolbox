@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using PersonalToolbox.ViewModels;
+using SmartToolbox.ViewModels;
 
-namespace PersonalToolbox;
+namespace SmartToolbox;
 
 public class ViewLocator : IDataTemplate
 {

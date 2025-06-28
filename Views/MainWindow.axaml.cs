@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace PersonalToolbox.Views;
+namespace SmartToolbox.Views;
 
 public partial class MainWindow : Window
 {

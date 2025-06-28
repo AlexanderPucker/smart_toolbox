@@ -3,7 +3,25 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
-             x:Class="PersonalToolbox.Views.TextToolView">
+             x:Class="SmartToolbox.Views.TextToolView">
+             
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#005A9B"/>
+        </Style>
+        <Style Selector="Button:pressed">
+            <Setter Property="Background" Value="#004578"/>
+        </Style>
+    </UserControl.Styles>
 
     <ScrollViewer>
         <StackPanel Margin="20" Spacing="20">
@@ -22,12 +40,60 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="文本操作:" FontWeight="Medium" FontSize="14"/>
                 <WrapPanel>
-                    <Button Content="转为大写" Margin="0,0,10,5" Click="ToUpperCase"/>
-                    <Button Content="转为小写" Margin="0,0,10,5" Click="ToLowerCase"/>
-                    <Button Content="首字母大写" Margin="0,0,10,5" Click="ToTitleCase"/>
-                    <Button Content="去除空格" Margin="0,0,10,5" Click="TrimSpaces"/>
-                    <Button Content="统计字数" Margin="0,0,10,5" Click="CountWords"/>
-                    <Button Content="清空文本" Margin="0,0,10,5" Click="ClearText"/>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="80"
+                            Click="ToUpperCase">
+                        <TextBlock Text="转为大写" 
+                                   Foreground="White" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="80"
+                            Click="ToLowerCase">
+                        <TextBlock Text="转为小写" 
+                                   Foreground="White" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="90"
+                            Click="ToTitleCase">
+                        <TextBlock Text="首字母大写" 
+                                   Foreground="White" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="80"
+                            Click="TrimSpaces">
+                        <TextBlock Text="去除空格" 
+                                   Foreground="White" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="80"
+                            Click="CountWords">
+                        <TextBlock Text="统计字数" 
+                                   Foreground="White" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
+                    <Button Margin="0,0,10,5" 
+                            Padding="12,8" 
+                            MinWidth="80"
+                            Click="ClearText">
+                        <TextBlock Text="清空文本" 
+                                   Foreground="Red" 
+                                   FontSize="14" 
+                                   FontFamily="Microsoft YaHei UI"/>
+                    </Button>
                 </WrapPanel>
             </StackPanel>
 

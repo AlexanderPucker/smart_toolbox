@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
-namespace PersonalToolbox.ViewModels;
+namespace SmartToolbox.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
@@ -50,7 +50,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         return toolName switch
         {
-            "文本工具" => new PersonalToolbox.Views.TextToolView(),
+            "文本工具" => new SmartToolbox.Views.TextToolView(),
             "计算器" => "这里是计算器的内容区域\n\n• 基础数学运算\n• 科学计算\n• 单位转换\n• 进制转换",
             "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
             "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",
