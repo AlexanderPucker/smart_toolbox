@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+             x:Class="PersonalToolbox.Views.TextToolView">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="20">
+            <!-- 文本输入区域 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="输入文本:" FontWeight="Medium" FontSize="14"/>
+                <TextBox Name="InputTextBox" 
+                         AcceptsReturn="True" 
+                         TextWrapping="Wrap" 
+                         Height="120" 
+                         Watermark="请输入要处理的文本..."
+                         FontFamily="Consolas, monospace"/>
+            </StackPanel>
+
+            <!-- 操作按钮区域 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="文本操作:" FontWeight="Medium" FontSize="14"/>
+                <WrapPanel>
+                    <Button Content="转为大写" Margin="0,0,10,5" Click="ToUpperCase"/>
+                    <Button Content="转为小写" Margin="0,0,10,5" Click="ToLowerCase"/>
+                    <Button Content="首字母大写" Margin="0,0,10,5" Click="ToTitleCase"/>
+                    <Button Content="去除空格" Margin="0,0,10,5" Click="TrimSpaces"/>
+                    <Button Content="统计字数" Margin="0,0,10,5" Click="CountWords"/>
+                    <Button Content="清空文本" Margin="0,0,10,5" Click="ClearText"/>
+                </WrapPanel>
+            </StackPanel>
+
+            <!-- 结果显示区域 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="处理结果:" FontWeight="Medium" FontSize="14"/>
+                <TextBox Name="OutputTextBox" 
+                         AcceptsReturn="True" 
+                         TextWrapping="Wrap" 
+                         Height="120" 
+                         IsReadOnly="True"
+                         FontFamily="Consolas, monospace"
+                         Background="#F8F8F8"/>
+            </StackPanel>
+
+            <!-- 文本统计信息 -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="统计信息:" FontWeight="Medium" FontSize="14"/>
+                <Border Background="#F5F5F7" 
+                        CornerRadius="5" 
+                        Padding="15">
+                    <StackPanel>
+                        <TextBlock Name="CharCountText" Text="字符数: 0"/>
+                        <TextBlock Name="WordCountText" Text="单词数: 0"/>
+                        <TextBlock Name="LineCountText" Text="行数: 0"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl> 

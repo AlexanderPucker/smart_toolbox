@@ -1,0 +1,122 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PersonalToolbox.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="PersonalToolbox.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="{Binding Title}"
+        MinWidth="800" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 侧边栏 -->
+        <Border Grid.Column="0" Background="#F5F5F7" BorderBrush="#E5E5E7" BorderThickness="0,0,1,0">
+            <StackPanel Margin="20">
+                <!-- 标题 -->
+                <TextBlock Text="🧰 个人工具箱" 
+                          FontSize="24" 
+                          FontWeight="Bold" 
+                          Foreground="#333333"
+                          Margin="0,0,0,30"/>
+
+                <!-- 工具列表 -->
+                <ListBox ItemsSource="{Binding Tools}"
+                         SelectionMode="Single"
+                         Background="Transparent"
+                         BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="15,12"
+                                    Margin="0,2"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
+                                    Command="{Binding $parent[Window].DataContext.SelectToolCommand}"
+                                    CommandParameter="{Binding}">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover">
+                                        <Setter Property="Background" Value="#E8E8EA"/>
+                                    </Style>
+                                    <Style Selector="Button:pressed">
+                                        <Setter Property="Background" Value="#D1D1D6"/>
+                                    </Style>
+                                </Button.Styles>
+                                
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Icon}" 
+                                              FontSize="20" 
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" 
+                                                  FontSize="14" 
+                                                  FontWeight="Medium"
+                                                  Foreground="#333333"/>
+                                        <TextBlock Text="{Binding Description}" 
+                                                  FontSize="11" 
+                                                  Foreground="#666666"
+                                                  TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </Border>
+
+        <!-- 主内容区域 -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 顶部标题栏 -->
+            <Border Grid.Row="0" 
+                    Background="#FFFFFF" 
+                    BorderBrush="#E5E5E7" 
+                    BorderThickness="0,0,0,1"
+                    Padding="30,20">
+                <TextBlock Text="{Binding SelectedToolName}" 
+                          FontSize="28" 
+                          FontWeight="Bold" 
+                          Foreground="#333333"/>
+            </Border>
+
+            <!-- 内容区域 -->
+            <Border Grid.Row="1" 
+                    Background="#FFFFFF">
+                <ContentPresenter Content="{Binding CurrentContent}">
+                    <ContentPresenter.DataTemplates>
+                        <DataTemplate DataType="x:String">
+                            <ScrollViewer Padding="30">
+                                <TextBlock Text="{Binding}" 
+                                          FontSize="14" 
+                                          LineHeight="24"
+                                          Foreground="#555555"
+                                          TextWrapping="Wrap"/>
+                            </ScrollViewer>
+                        </DataTemplate>
+                    </ContentPresenter.DataTemplates>
+                </ContentPresenter>
+            </Border>
+        </Grid>
+    </Grid>
+
+</Window>
