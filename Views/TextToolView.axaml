@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="SmartToolbox.Views.TextToolView">
              
     <UserControl.Styles>
@@ -14,6 +14,7 @@
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,8"/>
         </Style>
         <Style Selector="Button:pointerover">
             <Setter Property="Background" Value="#005A9B"/>
@@ -21,71 +22,166 @@
         <Style Selector="Button:pressed">
             <Setter Property="Background" Value="#004578"/>
         </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#DC3545"/>
+        </Style>
+        <Style Selector="Button.danger:pointerover">
+            <Setter Property="Background" Value="#C82333"/>
+        </Style>
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="#28A745"/>
+        </Style>
+        <Style Selector="Button.success:pointerover">
+            <Setter Property="Background" Value="#218838"/>
+        </Style>
     </UserControl.Styles>
 
     <ScrollViewer>
         <StackPanel Margin="20" Spacing="20">
-            <!-- 文本输入区域 -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="输入文本:" FontWeight="Medium" FontSize="14"/>
-                <TextBox Name="InputTextBox" 
-                         AcceptsReturn="True" 
-                         TextWrapping="Wrap" 
-                         Height="120" 
-                         Watermark="请输入要处理的文本..."
-                         FontFamily="Consolas, monospace"/>
-            </StackPanel>
-
-            <!-- 操作按钮区域 -->
+            <!-- 文件选择区域 -->
             <StackPanel Spacing="10">
-                <TextBlock Text="文本操作:" FontWeight="Medium" FontSize="14"/>
-                <WrapPanel>
-                    <Button Margin="0,0,10,5" Click="ToUpperCase">
-                        <TextBlock Text="转为大写"/>
+                <TextBlock Text="选择文件:" FontWeight="Medium" FontSize="16"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Name="FolderPathTextBox" 
+                             Grid.Column="0"
+                             Watermark="选择要重命名文件的文件夹路径..."
+                             IsReadOnly="True"
+                             FontFamily="Consolas, monospace"/>
+                    <Button Grid.Column="1" 
+                            Margin="10,0,0,0" 
+                            Click="SelectFolder">
+                        <TextBlock Text="浏览文件夹"/>
                     </Button>
-                    <Button Margin="0,0,10,5" Click="ToLowerCase">
-                        <TextBlock Text="转为小写"/>
+                </Grid>
+                
+                <!-- 文件过滤 -->
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="文件过滤:" VerticalAlignment="Center" FontWeight="Medium"/>
+                    <TextBox Name="FileFilterTextBox" 
+                             Width="200"
+                             Watermark="例如: *.txt, *.jpg"
+                             Text="*.*"/>
+                    <Button Click="RefreshFileList">
+                        <TextBlock Text="刷新列表"/>
                     </Button>
-                    <Button Margin="0,0,10,5" MinWidth="90" Click="ToTitleCase">
-                        <TextBlock Text="首字母大写"/>
-                    </Button>
-                    <Button Margin="0,0,10,5" Click="TrimSpaces">
-                        <TextBlock Text="去除空格"/>
-                    </Button>
-                    <Button Margin="0,0,10,5" Click="CountWords">
-                        <TextBlock Text="统计字数"/>
-                    </Button>
-                    <Button Margin="0,0,10,5" Classes="clear" Click="ClearText">
-                        <TextBlock Text="清空文本"/>
-                    </Button>
-                </WrapPanel>
+                </StackPanel>
             </StackPanel>
 
-            <!-- 结果显示区域 -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="处理结果:" FontWeight="Medium" FontSize="14"/>
-                <TextBox Name="OutputTextBox" 
-                         AcceptsReturn="True" 
-                         TextWrapping="Wrap" 
-                         Height="120" 
-                         IsReadOnly="True"
-                         FontFamily="Consolas, monospace"
-                         Background="#F8F8F8"/>
-            </StackPanel>
+            <!-- 重命名操作区域 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="重命名操作:" FontWeight="Medium" FontSize="16"/>
+                
+                <!-- 大小写转换 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="大小写转换" FontWeight="Medium"/>
+                        <WrapPanel>
+                            <Button Margin="0,0,10,5" Click="ConvertToUpperCase">
+                                <TextBlock Text="转为大写"/>
+                            </Button>
+                            <Button Margin="0,0,10,5" Click="ConvertToLowerCase">
+                                <TextBlock Text="转为小写"/>
+                            </Button>
+                            <Button Margin="0,0,10,5" Click="ConvertToTitleCase">
+                                <TextBlock Text="首字母大写"/>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
 
-            <!-- 文本统计信息 -->
-            <StackPanel Spacing="8">
-                <TextBlock Text="统计信息:" FontWeight="Medium" FontSize="14"/>
-                <Border Background="#F5F5F7" 
-                        CornerRadius="5" 
-                        Padding="15">
-                    <StackPanel>
-                        <TextBlock Name="CharCountText" Text="字符数: 0"/>
-                        <TextBlock Name="WordCountText" Text="单词数: 0"/>
-                        <TextBlock Name="LineCountText" Text="行数: 0"/>
+                <!-- 删除指定文本 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="删除指定文本" FontWeight="Medium"/>
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <TextBlock Grid.Column="0" Text="要删除的文本:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox Grid.Column="1" Name="RemoveTextBox" Watermark="输入要从文件名中删除的文本..."/>
+                            <Button Grid.Column="2" Margin="10,0,0,0" Click="RemoveSpecificText">
+                                <TextBlock Text="删除文本"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 批量重命名 -->
+                <Border Background="#F8F9FA" CornerRadius="5" Padding="15">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="批量重命名" FontWeight="Medium"/>
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" Margin="0,5">
+                            <!-- 前缀 -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="添加前缀:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="PrefixTextBox" Watermark="前缀文本..." Margin="0,0,10,5"/>
+                            <Button Grid.Row="0" Grid.Column="2" Click="AddPrefix" Margin="0,0,0,5">
+                                <TextBlock Text="添加前缀"/>
+                            </Button>
+                            
+                            <!-- 后缀 -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="添加后缀:" VerticalAlignment="Center" Margin="0,0,10,5"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Name="SuffixTextBox" Watermark="后缀文本..." Margin="0,0,10,5"/>
+                            <Button Grid.Row="1" Grid.Column="2" Click="AddSuffix" Margin="0,0,0,5">
+                                <TextBlock Text="添加后缀"/>
+                            </Button>
+                            
+                            <!-- 替换 -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="查找替换:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="5">
+                                <TextBox Name="FindTextBox" Width="120" Watermark="查找..."/>
+                                <TextBox Name="ReplaceTextBox" Width="120" Watermark="替换为..."/>
+                            </StackPanel>
+                            <Button Grid.Row="2" Grid.Column="2" Click="FindAndReplace">
+                                <TextBlock Text="查找替换"/>
+                            </Button>
+                        </Grid>
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <!-- 文件列表和预览 -->
+            <Grid ColumnDefinitions="1*,1*">
+                <!-- 原文件名列表 -->
+                <StackPanel Grid.Column="0" Spacing="8">
+                    <TextBlock Text="原文件名:" FontWeight="Medium" FontSize="14"/>
+                    <Border Background="#FFFFFF" BorderBrush="#E1E5E9" BorderThickness="1" CornerRadius="4">
+                        <ScrollViewer Height="300">
+                            <ListBox Name="OriginalFilesList" 
+                                     Background="Transparent"
+                                     SelectionMode="Multiple"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+
+                <!-- 新文件名预览 -->
+                <StackPanel Grid.Column="1" Spacing="8" Margin="20,0,0,0">
+                    <TextBlock Text="新文件名预览:" FontWeight="Medium" FontSize="14"/>
+                    <Border Background="#F8F8F8" BorderBrush="#E1E5E9" BorderThickness="1" CornerRadius="4">
+                        <ScrollViewer Height="300">
+                            <ListBox Name="PreviewFilesList" 
+                                     Background="Transparent"/>
+                        </ScrollViewer>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- 操作按钮 -->
+            <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
+                <Button Classes="success" Click="ApplyRename" MinWidth="120">
+                    <TextBlock Text="应用重命名"/>
+                </Button>
+                <Button Click="ResetPreview" MinWidth="120">
+                    <TextBlock Text="重置预览"/>
+                </Button>
+                <Button Classes="danger" Click="ClearAll" MinWidth="120">
+                    <TextBlock Text="清空所有"/>
+                </Button>
+            </StackPanel>
+
+            <!-- 状态信息 -->
+            <Border Background="#E8F4FD" CornerRadius="5" Padding="15">
+                <StackPanel>
+                    <TextBlock Name="StatusText" Text="就绪" FontWeight="Medium"/>
+                    <TextBlock Name="FileCountText" Text="文件数量: 0" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 
