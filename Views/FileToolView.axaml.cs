@@ -1,6 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using SmartToolbox.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,14 +13,14 @@ using System.Threading.Tasks;
 
 namespace SmartToolbox.Views;
 
-public partial class TextToolView : UserControl
+public partial class FileToolView : UserControl
 {
     private readonly ObservableCollection<string> _originalFiles = new();
     private readonly ObservableCollection<string> _previewFiles = new();
     private readonly List<FileInfo> _fileInfos = new();
     private string _currentFolderPath = "";
 
-    public TextToolView()
+    public FileToolView()
     {
         InitializeComponent();
         
@@ -30,6 +32,28 @@ public partial class TextToolView : UserControl
         
         if (previewFilesList != null)
             previewFilesList.ItemsSource = _previewFiles;
+            
+        // 初始化文件过滤器下拉框
+        InitializeFileFilterComboBox();
+    }
+
+    private void InitializeFileFilterComboBox()
+    {
+        var fileFilterComboBox = this.FindControl<ComboBox>("FileFilterComboBox");
+        if (fileFilterComboBox != null)
+        {
+            fileFilterComboBox.ItemsSource = FileFilterConfig.CommonFilters;
+            fileFilterComboBox.SelectedIndex = 0; // 默认选择"所有文件"
+        }
+    }
+
+    private void OnFileFilterChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        // 当下拉框选择发生变化时，自动刷新文件列表
+        if (!string.IsNullOrEmpty(_currentFolderPath))
+        {
+            _ = RefreshFileListInternal();
+        }
     }
 
     private async void SelectFolder(object? sender, RoutedEventArgs e)
@@ -68,8 +92,13 @@ public partial class TextToolView : UserControl
 
         try
         {
-            var fileFilterTextBox = this.FindControl<TextBox>("FileFilterTextBox");
-            var filter = fileFilterTextBox?.Text ?? "*.*";
+            var fileFilterComboBox = this.FindControl<ComboBox>("FileFilterComboBox");
+            string filter = "*.*";
+            
+            if (fileFilterComboBox?.SelectedItem is FileFilterItem selectedFilter)
+            {
+                filter = selectedFilter.Pattern;
+            }
             
             // 解析过滤器，支持多个模式（用逗号分隔）
             var patterns = filter.Split(',', StringSplitOptions.RemoveEmptyEntries)

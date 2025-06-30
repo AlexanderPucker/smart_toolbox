@@ -29,7 +29,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void InitializeTools()
     {
-        Tools.Add(new ToolItem("📄", "文本工具", "文本处理、格式转换等"));
+        Tools.Add(new ToolItem("📁", "文件工具", "文件重命名、批量操作等"));
         Tools.Add(new ToolItem("🔢", "计算器", "数学计算、单位转换"));
         Tools.Add(new ToolItem("🎨", "颜色工具", "颜色选择、格式转换"));
         Tools.Add(new ToolItem("🌐", "网络工具", "URL编码、IP查询等"));
@@ -50,7 +50,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         return toolName switch
         {
-            "文本工具" => new SmartToolbox.Views.TextToolView(),
+            "文件工具" => new SmartToolbox.Views.FileToolView(),
             "计算器" => "这里是计算器的内容区域\n\n• 基础数学运算\n• 科学计算\n• 单位转换\n• 进制转换",
             "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
             "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",

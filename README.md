@@ -90,8 +90,8 @@ smart_toolbox/
 ├── Views/              # 视图文件
 │   ├── MainWindow.axaml           # 主窗口
 │   ├── MainWindow.axaml.cs
-│   ├── TextToolView.axaml         # 文本工具页面
-│   └── TextToolView.axaml.cs
+│   ├── FileToolView.axaml         # 文件工具页面
+│   └── FileToolView.axaml.cs
 ├── ViewModels/         # 视图模型
 │   ├── ViewModelBase.cs
 │   └── MainWindowViewModel.cs     # 主窗口视图模型
