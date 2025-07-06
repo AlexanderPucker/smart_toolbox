@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SmartToolbox.Views;
@@ -21,10 +22,17 @@ public partial class FileMoverView : UserControl
     private string _sourceFolderPath = "";
     private string _targetFolderPath = "";
     
+    // 异步处理相关字段
+    private CancellationTokenSource? _cancellationTokenSource;
+    private bool _isProcessing = false;
+    private const int MAX_FILES_WARNING = 10000; // 文件数量警告阈值
+    private const int BATCH_SIZE = 100; // 批处理大小
+    
     // 滚动同步相关字段
     private ScrollViewer? _leftScrollViewer;
     private ScrollViewer? _rightScrollViewer;
     private bool _isScrollSyncEnabled = true;
+    private bool _scrollSyncInitialized = false;
 
     public FileMoverView()
     {
@@ -101,8 +109,15 @@ public partial class FileMoverView : UserControl
         }
     }
 
-    private void PreviewMoveFiles(object? sender, RoutedEventArgs e)
+    private async void PreviewMoveFiles(object? sender, RoutedEventArgs e)
     {
+        if (_isProcessing)
+        {
+            // 取消当前操作
+            _cancellationTokenSource?.Cancel();
+            return;
+        }
+
         if (string.IsNullOrEmpty(_sourceFolderPath) || !Directory.Exists(_sourceFolderPath))
         {
             UpdateStatus("请先选择一个有效的源文件夹");
@@ -117,6 +132,29 @@ public partial class FileMoverView : UserControl
 
         try
         {
+            await PreviewMoveFilesAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateStatus("操作已取消");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"预览文件失败: {ex.Message}");
+        }
+    }
+
+    private async Task PreviewMoveFilesAsync()
+    {
+        _isProcessing = true;
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
+        try
+        {
+            // 更新按钮状态
+            UpdatePreviewButtonState(true);
+            
             var moveFileFilterComboBox = this.FindControl<ComboBox>("MoveFileFilterComboBox");
             var includeSubfoldersCheckBox = this.FindControl<CheckBox>("IncludeSubfoldersCheckBox");
             
@@ -134,49 +172,117 @@ public partial class FileMoverView : UserControl
                                 .Select(p => p.Trim())
                                 .ToArray();
 
+            // 清空现有数据
             _filesToMove.Clear();
             _sourceFiles.Clear();
             _movePreviewFiles.Clear();
 
-            foreach (var pattern in patterns)
+            UpdateStatus("正在扫描文件...");
+
+            // 异步扫描文件
+            var allFiles = new List<FileInfo>();
+            await Task.Run(() =>
             {
-                var files = Directory.GetFiles(_sourceFolderPath, pattern, searchOption);
-                foreach (var file in files)
+                foreach (var pattern in patterns)
                 {
-                    var fileInfo = new FileInfo(file);
-                    if (!_filesToMove.Any(f => f.FullName == fileInfo.FullName))
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    var files = Directory.GetFiles(_sourceFolderPath, pattern, searchOption);
+                    foreach (var file in files)
                     {
-                        _filesToMove.Add(fileInfo);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        
+                        var fileInfo = new FileInfo(file);
+                        if (!allFiles.Any(f => f.FullName == fileInfo.FullName))
+                        {
+                            allFiles.Add(fileInfo);
+                        }
                     }
+                }
+            }, cancellationToken);
+
+            // 检查文件数量
+            if (allFiles.Count > MAX_FILES_WARNING)
+            {
+                UpdateStatus($"警告：找到 {allFiles.Count} 个文件，数量较多可能影响性能");
+                await Task.Delay(2000, cancellationToken); // 给用户时间看到警告
+                
+                // 如果文件数量过多，可以考虑只加载前面的文件
+                if (allFiles.Count > MAX_FILES_WARNING * 2)
+                {
+                    UpdateStatus($"文件数量过多 ({allFiles.Count})，为了性能考虑，只显示前 {MAX_FILES_WARNING} 个文件");
+                    allFiles = allFiles.Take(MAX_FILES_WARNING).ToList();
                 }
             }
 
             // 按文件路径排序
-            _filesToMove.Sort((x, y) => string.Compare(x.FullName, y.FullName, StringComparison.OrdinalIgnoreCase));
+            allFiles.Sort((x, y) => string.Compare(x.FullName, y.FullName, StringComparison.OrdinalIgnoreCase));
+            _filesToMove.AddRange(allFiles);
 
-            // 更新源文件列表和预览列表
-            foreach (var file in _filesToMove)
+            UpdateStatus($"正在加载文件列表... (共 {allFiles.Count} 个文件)");
+
+            // 分批加载到UI
+            for (int i = 0; i < allFiles.Count; i += BATCH_SIZE)
             {
-                // 左侧显示：相对于源文件夹的路径
-                var relativePath = Path.GetRelativePath(_sourceFolderPath, file.FullName);
-                _sourceFiles.Add(relativePath);
+                cancellationToken.ThrowIfCancellationRequested();
                 
-                // 右侧显示：目标文件夹+文件名
-                var targetFileName = file.Name;
-                var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}\\{targetFileName}";
-                _movePreviewFiles.Add(targetDisplay);
+                var batch = allFiles.Skip(i).Take(BATCH_SIZE);
+                
+                // 在UI线程中更新界面
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    foreach (var file in batch)
+                    {
+                        // 左侧显示：相对于源文件夹的路径
+                        var relativePath = Path.GetRelativePath(_sourceFolderPath, file.FullName);
+                        _sourceFiles.Add(relativePath);
+                        
+                        // 右侧显示：目标文件夹+文件名
+                        var targetFileName = file.Name;
+                        var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}\\{targetFileName}";
+                        _movePreviewFiles.Add(targetDisplay);
+                    }
+                });
+
+                // 更新进度
+                var progress = (i + BATCH_SIZE) * 100 / allFiles.Count;
+                if (progress > 100) progress = 100;
+                UpdateStatus($"加载进度: {progress}% ({Math.Min(i + BATCH_SIZE, allFiles.Count)}/{allFiles.Count})");
+                
+                // 短暂延迟以避免UI卡顿
+                await Task.Delay(10, cancellationToken);
             }
 
             UpdateStatus($"预览完成，找到 {_filesToMove.Count} 个文件待移动");
         }
-        catch (Exception ex)
+        finally
         {
-            UpdateStatus($"预览文件失败: {ex.Message}");
+            _isProcessing = false;
+            UpdatePreviewButtonState(false);
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 
-    private void ExecuteMoveFiles(object? sender, RoutedEventArgs e)
+    private void UpdatePreviewButtonState(bool isProcessing)
     {
+        // 这里需要根据AXAML中的按钮名称来更新按钮状态
+        // 假设预览按钮的名称是"PreviewButton"
+        var previewButton = this.FindControl<Button>("PreviewButton");
+        if (previewButton != null)
+        {
+            previewButton.Content = isProcessing ? "取消" : "预览移动";
+        }
+    }
+
+    private async void ExecuteMoveFiles(object? sender, RoutedEventArgs e)
+    {
+        if (_isProcessing)
+        {
+            UpdateStatus("正在处理中，请稍候...");
+            return;
+        }
+
         if (_filesToMove.Count == 0)
         {
             UpdateStatus("没有找到要移动的文件，请先点击'预览移动'");
@@ -191,45 +297,106 @@ public partial class FileMoverView : UserControl
 
         try
         {
+            await ExecuteMoveFilesAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateStatus("移动操作已取消");
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus($"移动文件失败: {ex.Message}");
+        }
+    }
+
+    private async Task ExecuteMoveFilesAsync()
+    {
+        _isProcessing = true;
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
+        try
+        {
+            // 更新按钮状态
+            UpdateMoveButtonState(true);
+
             // 确保目标文件夹存在
             Directory.CreateDirectory(_targetFolderPath);
 
             int successCount = 0;
             var errors = new List<string>();
+            var totalFiles = _filesToMove.Count;
 
-            foreach (var file in _filesToMove)
+            UpdateStatus($"开始移动文件... (共 {totalFiles} 个文件)");
+
+            // 分批处理文件移动
+            for (int i = 0; i < totalFiles; i += BATCH_SIZE)
             {
-                try
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var batch = _filesToMove.Skip(i).Take(BATCH_SIZE);
+                
+                await Task.Run(() =>
                 {
-                    var targetFilePath = Path.Combine(_targetFolderPath, file.Name);
-                    
-                    // 检查目标文件是否已存在
-                    if (File.Exists(targetFilePath))
+                    foreach (var file in batch)
                     {
-                        // 生成唯一的文件名
-                        var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
-                        var extension = Path.GetExtension(file.Name);
-                        int counter = 1;
+                        cancellationToken.ThrowIfCancellationRequested();
                         
-                        while (File.Exists(targetFilePath))
+                        try
                         {
-                            var newName = $"{nameWithoutExt}_{counter}{extension}";
-                            targetFilePath = Path.Combine(_targetFolderPath, newName);
-                            counter++;
+                            var targetFilePath = Path.Combine(_targetFolderPath, file.Name);
+                            
+                            // 检查目标文件是否已存在
+                            if (File.Exists(targetFilePath))
+                            {
+                                // 生成唯一的文件名
+                                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
+                                var extension = Path.GetExtension(file.Name);
+                                int counter = 1;
+                                
+                                while (File.Exists(targetFilePath))
+                                {
+                                    var newName = $"{nameWithoutExt}_{counter}{extension}";
+                                    targetFilePath = Path.Combine(_targetFolderPath, newName);
+                                    counter++;
+                                }
+                            }
+
+                            // 检查磁盘空间（简单检查）
+                            var targetDrive = new DriveInfo(Path.GetPathRoot(targetFilePath)!);
+                            if (targetDrive.AvailableFreeSpace < file.Length)
+                            {
+                                throw new IOException($"目标磁盘空间不足，需要 {file.Length} 字节，可用 {targetDrive.AvailableFreeSpace} 字节");
+                            }
+                            
+                            // 移动文件
+                            File.Move(file.FullName, targetFilePath);
+                            Interlocked.Increment(ref successCount);
+                        }
+                        catch (Exception ex)
+                        {
+                            lock (errors)
+                            {
+                                errors.Add($"{file.Name}: {ex.Message}");
+                            }
                         }
                     }
+                }, cancellationToken);
 
-                    // 移动文件
-                    File.Move(file.FullName, targetFilePath);
-                    successCount++;
-                }
-                catch (Exception ex)
+                // 更新进度
+                var progress = (i + BATCH_SIZE) * 100 / totalFiles;
+                if (progress > 100) progress = 100;
+                
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    errors.Add($"{file.Name}: {ex.Message}");
-                }
+                    UpdateStatus($"移动进度: {progress}% ({Math.Min(i + BATCH_SIZE, totalFiles)}/{totalFiles})");
+                });
+
+                // 短暂延迟以避免过于频繁的UI更新
+                await Task.Delay(50, cancellationToken);
             }
 
-            // 更新状态
+            // 更新最终状态
             var statusMessage = $"移动完成: 成功 {successCount} 个";
             if (errors.Count > 0)
                 statusMessage += $", 失败 {errors.Count} 个";
@@ -238,16 +405,35 @@ public partial class FileMoverView : UserControl
 
             if (errors.Count > 0)
             {
-                // 可以在这里显示详细错误信息，暂时只显示第一个错误
-                UpdateStatus($"部分文件移动失败: {errors[0]}");
+                // 显示详细错误信息（限制显示前几个错误）
+                var errorSummary = string.Join("; ", errors.Take(3));
+                if (errors.Count > 3)
+                    errorSummary += $"... 等 {errors.Count} 个错误";
+                
+                UpdateStatus($"部分文件移动失败: {errorSummary}");
             }
 
             // 清除预览
-            ClearMovePreviewInternal();
+            if (successCount > 0)
+            {
+                ClearMovePreviewInternal();
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            UpdateStatus($"移动文件失败: {ex.Message}");
+            _isProcessing = false;
+            UpdateMoveButtonState(false);
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+        }
+    }
+
+    private void UpdateMoveButtonState(bool isProcessing)
+    {
+        var executeButton = this.FindControl<Button>("ExecuteButton");
+        if (executeButton != null)
+        {
+            executeButton.IsEnabled = !isProcessing;
         }
     }
 
@@ -258,9 +444,21 @@ public partial class FileMoverView : UserControl
 
     private void ClearMovePreviewInternal()
     {
+        // 取消正在进行的操作
+        if (_isProcessing)
+        {
+            _cancellationTokenSource?.Cancel();
+        }
+        
         _filesToMove.Clear();
         _sourceFiles.Clear();
         _movePreviewFiles.Clear();
+        
+        // 强制垃圾回收，释放内存
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        
         UpdateStatus("已清除移动预览");
     }
 
@@ -270,38 +468,128 @@ public partial class FileMoverView : UserControl
 
     private void InitializeScrollSync()
     {
-        // 获取滚动视图控件的引用
-        _leftScrollViewer = this.FindControl<ScrollViewer>("LeftScrollViewer");
-        _rightScrollViewer = this.FindControl<ScrollViewer>("RightScrollViewer");
-
-        // 绑定滚动事件
-        if (_leftScrollViewer != null)
+        if (_scrollSyncInitialized) return;
+        
+        // 延迟初始化滚动同步，确保控件已完全加载
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
         {
-            _leftScrollViewer.ScrollChanged += OnLeftScrollChanged;
-        }
+            try
+            {
+                if (_scrollSyncInitialized) return;
+                
+                // 获取滚动视图控件的引用
+                _leftScrollViewer = this.FindControl<ScrollViewer>("LeftScrollViewer");
+                _rightScrollViewer = this.FindControl<ScrollViewer>("RightScrollViewer");
 
-        if (_rightScrollViewer != null)
-        {
-            _rightScrollViewer.ScrollChanged += OnRightScrollChanged;
-        }
+                // 绑定滚动事件
+                if (_leftScrollViewer != null)
+                {
+                    _leftScrollViewer.ScrollChanged += OnLeftScrollChanged;
+                }
+
+                if (_rightScrollViewer != null)
+                {
+                    _rightScrollViewer.ScrollChanged += OnRightScrollChanged;
+                }
+                
+                _scrollSyncInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"初始化滚动同步失败: {ex.Message}");
+                // 如果滚动同步初始化失败，禁用同步功能
+                _isScrollSyncEnabled = false;
+            }
+        }, Avalonia.Threading.DispatcherPriority.Loaded);
     }
 
     private void OnLeftScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
         if (!_isScrollSyncEnabled || _rightScrollViewer == null) return;
 
-        _isScrollSyncEnabled = false; // 防止递归调用
-        _rightScrollViewer.Offset = new Vector(e.OffsetDelta.X + _rightScrollViewer.Offset.X, e.OffsetDelta.Y + _rightScrollViewer.Offset.Y);
-        _isScrollSyncEnabled = true;
+        try
+        {
+            _isScrollSyncEnabled = false; // 防止递归调用
+            
+            // 直接同步滚动位置，而不是累加偏移量
+            if (sender is ScrollViewer leftScroll)
+            {
+                _rightScrollViewer.Offset = new Vector(_rightScrollViewer.Offset.X, leftScroll.Offset.Y);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 避免滚动同步错误导致崩溃
+            System.Diagnostics.Debug.WriteLine($"滚动同步错误: {ex.Message}");
+        }
+        finally
+        {
+            _isScrollSyncEnabled = true;
+        }
     }
 
     private void OnRightScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
         if (!_isScrollSyncEnabled || _leftScrollViewer == null) return;
 
-        _isScrollSyncEnabled = false; // 防止递归调用
-        _leftScrollViewer.Offset = new Vector(e.OffsetDelta.X + _leftScrollViewer.Offset.X, e.OffsetDelta.Y + _leftScrollViewer.Offset.Y);
-        _isScrollSyncEnabled = true;
+        try
+        {
+            _isScrollSyncEnabled = false; // 防止递归调用
+            
+            // 直接同步滚动位置，而不是累加偏移量
+            if (sender is ScrollViewer rightScroll)
+            {
+                _leftScrollViewer.Offset = new Vector(_leftScrollViewer.Offset.X, rightScroll.Offset.Y);
+            }
+        }
+        catch (Exception ex)
+        {
+            // 避免滚动同步错误导致崩溃
+            System.Diagnostics.Debug.WriteLine($"滚动同步错误: {ex.Message}");
+        }
+        finally
+        {
+            _isScrollSyncEnabled = true;
+        }
+    }
+
+    /// <summary>
+    /// 禁用滚动同步功能（如果遇到问题时调用）
+    /// </summary>
+    public void DisableScrollSync()
+    {
+        _isScrollSyncEnabled = false;
+        
+        // 解绑事件
+        if (_leftScrollViewer != null)
+        {
+            _leftScrollViewer.ScrollChanged -= OnLeftScrollChanged;
+        }
+        if (_rightScrollViewer != null)
+        {
+            _rightScrollViewer.ScrollChanged -= OnRightScrollChanged;
+        }
+    }
+
+    #endregion
+
+    #region 资源清理
+
+    public void Dispose()
+    {
+        // 取消所有正在进行的操作
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        
+        // 清理事件处理程序
+        if (_leftScrollViewer != null)
+        {
+            _leftScrollViewer.ScrollChanged -= OnLeftScrollChanged;
+        }
+        if (_rightScrollViewer != null)
+        {
+            _rightScrollViewer.ScrollChanged -= OnRightScrollChanged;
+        }
     }
 
     #endregion

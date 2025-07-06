@@ -83,14 +83,14 @@
                               IsChecked="True"
                               Margin="15,0,0,0"
                               VerticalAlignment="Center"/>
-                    <Button Grid.Column="3" Click="PreviewMoveFiles" Margin="15,0,0,0">
+                    <Button Grid.Column="3" Name="PreviewButton" Click="PreviewMoveFiles" Margin="15,0,0,0">
                         <TextBlock Text="预览移动"/>
                     </Button>
                 </Grid>
 
                 <!-- 移动操作按钮 -->
                 <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Left">
-                    <Button Classes="success" Click="ExecuteMoveFiles" MinWidth="120">
+                    <Button Name="ExecuteButton" Classes="success" Click="ExecuteMoveFiles" MinWidth="120">
                         <TextBlock Text="执行移动"/>
                     </Button>
                     <Button Click="ClearMovePreview" MinWidth="120">
