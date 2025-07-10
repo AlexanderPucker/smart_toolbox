@@ -51,6 +51,9 @@ public partial class FileMoverView : UserControl
         // 初始化移动文件过滤器下拉框
         InitializeMoveFileFilterComboBox();
         
+        // 初始化大小写转换下拉框
+        InitializeCaseConversionComboBox();
+        
         // 初始化滚动同步
         InitializeScrollSync();
     }
@@ -64,6 +67,16 @@ public partial class FileMoverView : UserControl
         {
             moveFileFilterComboBox.ItemsSource = FileFilterConfig.CommonFilters;
             moveFileFilterComboBox.SelectedIndex = 0; // 默认选择"所有文件"
+        }
+    }
+
+    private void InitializeCaseConversionComboBox()
+    {
+        var caseConversionComboBox = this.FindControl<ComboBox>("CaseConversionComboBox");
+        if (caseConversionComboBox != null)
+        {
+            caseConversionComboBox.ItemsSource = CaseConversionConfig.ConversionOptions;
+            caseConversionComboBox.SelectedIndex = 0; // 默认选择"保持原始大小写"
         }
     }
 
@@ -231,14 +244,16 @@ public partial class FileMoverView : UserControl
                 // 在UI线程中更新界面
                 await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
                 {
+                    var caseConversion = GetSelectedCaseConversion();
+                    
                     foreach (var file in batch)
                     {
                         // 左侧显示：相对于源文件夹的路径
                         var relativePath = Path.GetRelativePath(_sourceFolderPath, file.FullName);
                         _sourceFiles.Add(relativePath);
                         
-                        // 右侧显示：目标文件夹+文件名
-                        var targetFileName = file.Name;
+                        // 右侧显示：目标文件夹+转换后的文件名
+                        var targetFileName = ConvertFileName(file.Name, caseConversion);
                         var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}\\{targetFileName}";
                         _movePreviewFiles.Add(targetDisplay);
                     }
@@ -266,12 +281,19 @@ public partial class FileMoverView : UserControl
 
     private void UpdatePreviewButtonState(bool isProcessing)
     {
-        // 这里需要根据AXAML中的按钮名称来更新按钮状态
-        // 假设预览按钮的名称是"PreviewButton"
         var previewButton = this.FindControl<Button>("PreviewButton");
         if (previewButton != null)
         {
-            previewButton.Content = isProcessing ? "取消" : "预览移动";
+            // 按钮内容是TextBlock，需要更新TextBlock的Text属性
+            if (previewButton.Content is TextBlock textBlock)
+            {
+                textBlock.Text = isProcessing ? "取消" : "预览移动";
+            }
+            else
+            {
+                // 如果不是TextBlock，创建一个新的TextBlock
+                previewButton.Content = new TextBlock { Text = isProcessing ? "取消" : "预览移动" };
+            }
         }
     }
 
@@ -336,6 +358,8 @@ public partial class FileMoverView : UserControl
 
                 var batch = _filesToMove.Skip(i).Take(BATCH_SIZE);
                 
+                var caseConversion = GetSelectedCaseConversion();
+                
                 await Task.Run(() =>
                 {
                     foreach (var file in batch)
@@ -344,14 +368,16 @@ public partial class FileMoverView : UserControl
                         
                         try
                         {
-                            var targetFilePath = Path.Combine(_targetFolderPath, file.Name);
+                            // 应用大小写转换
+                            var convertedFileName = ConvertFileName(file.Name, caseConversion);
+                            var targetFilePath = Path.Combine(_targetFolderPath, convertedFileName);
                             
                             // 检查目标文件是否已存在
                             if (File.Exists(targetFilePath))
                             {
                                 // 生成唯一的文件名
-                                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
-                                var extension = Path.GetExtension(file.Name);
+                                var nameWithoutExt = Path.GetFileNameWithoutExtension(convertedFileName);
+                                var extension = Path.GetExtension(convertedFileName);
                                 int counter = 1;
                                 
                                 while (File.Exists(targetFilePath))
@@ -460,6 +486,48 @@ public partial class FileMoverView : UserControl
         GC.Collect();
         
         UpdateStatus("已清除移动预览");
+    }
+
+    #endregion
+
+    #region 大小写转换功能
+
+    private string ConvertFileName(string fileName, CaseConversionType conversionType)
+    {
+        if (string.IsNullOrEmpty(fileName) || conversionType == CaseConversionType.None)
+            return fileName;
+
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+
+        string convertedName = conversionType switch
+        {
+            CaseConversionType.UpperCase => nameWithoutExtension.ToUpperInvariant(),
+            CaseConversionType.LowerCase => nameWithoutExtension.ToLowerInvariant(),
+            CaseConversionType.TitleCase => ConvertToTitleCase(nameWithoutExtension),
+            _ => nameWithoutExtension
+        };
+
+        return convertedName + extension;
+    }
+
+    private string ConvertToTitleCase(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        var textInfo = System.Globalization.CultureInfo.CurrentCulture.TextInfo;
+        return textInfo.ToTitleCase(input.ToLower());
+    }
+
+    private CaseConversionType GetSelectedCaseConversion()
+    {
+        var caseConversionComboBox = this.FindControl<ComboBox>("CaseConversionComboBox");
+        if (caseConversionComboBox?.SelectedItem is CaseConversionItem selectedItem)
+        {
+            return selectedItem.ConversionType;
+        }
+        return CaseConversionType.None;
     }
 
     #endregion
