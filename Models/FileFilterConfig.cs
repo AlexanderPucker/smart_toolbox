@@ -3,6 +3,42 @@ using System.Collections.ObjectModel;
 
 namespace SmartToolbox.Models
 {
+    public static class CaseConversionConfig
+    {
+        public static ObservableCollection<CaseConversionItem> ConversionOptions { get; } = new()
+        {
+            new CaseConversionItem("保持原始大小写", CaseConversionType.None),
+            new CaseConversionItem("转换为大写", CaseConversionType.UpperCase),
+            new CaseConversionItem("转换为小写", CaseConversionType.LowerCase),
+            new CaseConversionItem("转换为首字母大写", CaseConversionType.TitleCase)
+        };
+    }
+
+    public enum CaseConversionType
+    {
+        None = 0,
+        UpperCase = 1,
+        LowerCase = 2,
+        TitleCase = 3
+    }
+
+    public class CaseConversionItem
+    {
+        public string DisplayName { get; set; }
+        public CaseConversionType ConversionType { get; set; }
+
+        public CaseConversionItem(string displayName, CaseConversionType conversionType)
+        {
+            DisplayName = displayName;
+            ConversionType = conversionType;
+        }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
+    }
+
     public static class FileFilterConfig
     {
         public static ObservableCollection<FileFilterItem> CommonFilters { get; } = new()

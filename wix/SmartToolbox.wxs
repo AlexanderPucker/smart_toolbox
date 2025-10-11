@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Smart Toolbox" 
+           Version="1.0.0" 
+           Manufacturer="Your Company" 
+           UpgradeCode="12345678-1234-1234-1234-123456789012">
+    
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Smart Toolbox is already installed." />
+    
+    <Media Id="1" Cabinet="SmartToolbox.cab" EmbedCab="yes" />
+    
+    <Feature Id="ProductFeature" Title="Smart Toolbox" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+    
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Smart Toolbox" />
+    </StandardDirectory>
+    
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="SmartToolboxExe">
+        <File Id="SmartToolboxExe" Source="publish\SmartToolbox-1.0.0-win-x64\SmartToolbox.exe" KeyPath="yes">
+          <Shortcut Id="StartMenuShortcut" 
+                    Directory="ProgramMenuFolder" 
+                    Name="Smart Toolbox" 
+                    WorkingDirectory="INSTALLFOLDER" />
+          <Shortcut Id="DesktopShortcut" 
+                    Directory="DesktopFolder" 
+                    Name="Smart Toolbox" 
+                    WorkingDirectory="INSTALLFOLDER" />
+        </File>
+      </Component>
+      
+      <!-- 添加其他必要的文件 -->
+      <Component Id="AppConfig">
+        <File Id="AppConfig" Source="publish\SmartToolbox-1.0.0-win-x64\SmartToolbox.dll" />
+      </Component>
+      
+      <!-- 运行时文件 -->
+      <Component Id="RuntimeFiles">
+        <File Id="RuntimeFiles" Source="publish\SmartToolbox-1.0.0-win-x64\*" />
+      </Component>
+    </ComponentGroup>
+    
+    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
+  </Package>
+</Wix>
