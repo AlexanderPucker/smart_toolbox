@@ -248,12 +248,21 @@ public partial class FileMoverView : UserControl
                     
                     foreach (var file in batch)
                     {
+                        // 检查源路径和目标路径是否一致
+                        var targetFileName = ConvertFileName(file.Name, caseConversion);
+                        var targetFilePath = Path.Combine(_targetFolderPath, targetFileName);
+                        
+                        // 如果源文件路径和目标文件路径相同，则跳过此文件
+                        if (string.Equals(file.FullName, targetFilePath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+                        
                         // 左侧显示：相对于源文件夹的路径
                         var relativePath = Path.GetRelativePath(_sourceFolderPath, file.FullName);
                         _sourceFiles.Add(relativePath);
                         
                         // 右侧显示：目标文件夹+转换后的文件名
-                        var targetFileName = ConvertFileName(file.Name, caseConversion);
                         var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}\\{targetFileName}";
                         _movePreviewFiles.Add(targetDisplay);
                     }
@@ -371,6 +380,12 @@ public partial class FileMoverView : UserControl
                             // 应用大小写转换
                             var convertedFileName = ConvertFileName(file.Name, caseConversion);
                             var targetFilePath = Path.Combine(_targetFolderPath, convertedFileName);
+                            
+                            // 检查源路径和目标路径是否一致，如果一致则跳过
+                            if (string.Equals(file.FullName, targetFilePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
                             
                             // 检查目标文件是否已存在
                             if (File.Exists(targetFilePath))
