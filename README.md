@@ -160,8 +160,34 @@ public partial class YourToolView : UserControl
 
 欢迎提交 Issue 和 Pull Request 来改进这个项目！
 
+## Windows MSI 安装包编译
+
+项目支持编译为 Windows MSI 安装包，便于在 Windows 系统上分发和安装。
+
+### 编译步骤
+
+1. **构建发布包**：
+   ```powershell
+   .\build-packages.ps1 -Version "1.0.0"
+   ```
+
+2. **创建 MSI 安装包**：
+   ```powershell
+   .\create-msi.ps1 -Version "1.0.0" -Platform "win-x64"
+   ```
+
+3. **查找生成的 MSI 文件**：
+   ```
+   publish\SmartToolbox-1.0.0-win-x64.msi
+   ```
+
+### 详细说明
+
+有关如何编译 Windows MSI 安装包的完整说明，请参阅 [WINDOWS_MSI_BUILD.md](WINDOWS_MSI_BUILD.md) 文档。
+
 ## 联系方式
 
-如果您有任何问题或建议，请创建 Issue 或通过以下方式联系我：
+如有任何问题或建议，请通过以下方式联系我们：
 
-- GitHub Issues: [项目地址]/issues
+- 邮箱：your-email@company.com
+- GitHub：[Your Repository](https://github.com/your-repo)
