@@ -17,12 +17,12 @@ New-Item -ItemType Directory -Path "publish" | Out-Null
 # 定义目标平台
 $platforms = @(
     @{ Name = "Windows x64"; RID = "win-x64"; Extension = ".exe" },
-    @{ Name = "Windows x86"; RID = "win-x86"; Extension = ".exe" },
-    @{ Name = "Windows ARM64"; RID = "win-arm64"; Extension = ".exe" },
-    @{ Name = "macOS x64"; RID = "osx-x64"; Extension = "" },
-    @{ Name = "macOS ARM64"; RID = "osx-arm64"; Extension = "" },
-    @{ Name = "Linux x64"; RID = "linux-x64"; Extension = "" },
-    @{ Name = "Linux ARM64"; RID = "linux-arm64"; Extension = "" }
+    # @{ Name = "Windows x86"; RID = "win-x86"; Extension = ".exe" },
+    # @{ Name = "Windows ARM64"; RID = "win-arm64"; Extension = ".exe" },
+    # @{ Name = "macOS x64"; RID = "osx-x64"; Extension = "" },
+    # @{ Name = "macOS ARM64"; RID = "osx-arm64"; Extension = "" },
+    # @{ Name = "Linux x64"; RID = "linux-x64"; Extension = "" },
+    # @{ Name = "Linux ARM64"; RID = "linux-arm64"; Extension = "" }
 )
 
 foreach ($platform in $platforms) {

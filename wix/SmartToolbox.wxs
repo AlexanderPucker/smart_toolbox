@@ -31,14 +31,17 @@
         </File>
       </Component>
       
-      <!-- 添加其他必要的文件 -->
-      <Component Id="AppConfig">
-        <File Id="AppConfig" Source="publish\SmartToolbox-1.0.0-win-x64\SmartToolbox.dll" />
-      </Component>
-      
       <!-- 运行时文件 -->
       <Component Id="RuntimeFiles">
-        <File Id="RuntimeFiles" Source="publish\SmartToolbox-1.0.0-win-x64\*" />
+        <File Id="RuntimeFiles" Source="publish\SmartToolbox-1.0.0-win-x64\av_libglesv2.dll" />
+      </Component>
+      
+      <Component Id="LibHarfBuzzSharp">
+        <File Id="LibHarfBuzzSharp" Source="publish\SmartToolbox-1.0.0-win-x64\libHarfBuzzSharp.dll" />
+      </Component>
+      
+      <Component Id="LibSkiaSharp">
+        <File Id="LibSkiaSharp" Source="publish\SmartToolbox-1.0.0-win-x64\libSkiaSharp.dll" />
       </Component>
     </ComponentGroup>
     
