@@ -7,10 +7,10 @@ namespace SmartToolbox.Models
     {
         public static ObservableCollection<CaseConversionItem> ConversionOptions { get; } = new()
         {
-            new CaseConversionItem("保持原始大小写", CaseConversionType.None),
             new CaseConversionItem("转换为大写", CaseConversionType.UpperCase),
             new CaseConversionItem("转换为小写", CaseConversionType.LowerCase),
-            new CaseConversionItem("转换为首字母大写", CaseConversionType.TitleCase)
+            new CaseConversionItem("转换为首字母大写", CaseConversionType.TitleCase),
+            new CaseConversionItem("保持原始大小写", CaseConversionType.None)
         };
     }
 
