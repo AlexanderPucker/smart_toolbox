@@ -4,19 +4,39 @@ using System.Collections.ObjectModel;
 
 namespace SmartToolbox.ViewModels;
 
+/// <summary>
+/// 主窗口视图模型类
+/// 负责管理主窗口的工具选择和内容显示
+/// </summary>
 public partial class MainWindowViewModel : ViewModelBase
 {
+    /// <summary>
+    /// 窗口标题
+    /// </summary>
     [ObservableProperty]
     private string _title = "个人工具箱";
 
+    /// <summary>
+    /// 当前选中工具的名称
+    /// </summary>
     [ObservableProperty]
     private string _selectedToolName = "欢迎使用";
 
+    /// <summary>
+    /// 当前显示的内容视图
+    /// </summary>
     [ObservableProperty]
     private object? _currentContent;
 
+    /// <summary>
+    /// 可用工具集合
+    /// </summary>
     public ObservableCollection<ToolItem> Tools { get; } = new();
 
+    /// <summary>
+    /// 构造函数
+    /// 初始化工具列表并默认选择第一个工具
+    /// </summary>
     public MainWindowViewModel()
     {
         InitializeTools();
@@ -27,16 +47,21 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// 初始化工具列表
+    /// 添加预定义的工具项到工具集合中
+    /// </summary>
     private void InitializeTools()
     {
         Tools.Add(new ToolItem("📁", "文件移动工具", "文件移动、批量操作等"));
-        Tools.Add(new ToolItem("🔢", "计算器", "数学计算、单位转换"));
-        Tools.Add(new ToolItem("🎨", "颜色工具", "颜色选择、格式转换"));
-        Tools.Add(new ToolItem("🌐", "网络工具", "URL编码、IP查询等"));
-        Tools.Add(new ToolItem("📊", "数据工具", "JSON格式化、Base64编码"));
-        Tools.Add(new ToolItem("⚙️", "系统信息", "系统信息查看"));
+        Tools.Add(new ToolItem("⚙️", "系统设置", "系统设置配置"));
     }
 
+    /// <summary>
+    /// 选择工具命令
+    /// 当用户在UI中选择一个工具时执行
+    /// </summary>
+    /// <param name="tool">选中的工具项</param>
     [RelayCommand]
     private void SelectTool(ToolItem tool)
     {
@@ -46,27 +71,53 @@ public partial class MainWindowViewModel : ViewModelBase
         CurrentContent = CreateToolContent(tool.Name);
     }
 
+    /// <summary>
+    /// 创建工具内容视图
+    /// 根据工具名称返回对应的视图实例
+    /// </summary>
+    /// <param name="toolName">工具名称</param>
+    /// <returns>工具对应的内容视图</returns>
     private object CreateToolContent(string toolName)
     {
         return toolName switch
         {
             "文件移动工具" => new SmartToolbox.Views.FileMoverView(),
-            "计算器" => "这里是计算器的内容区域\n\n• 基础数学运算\n• 科学计算\n• 单位转换\n• 进制转换",
-            "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
-            "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",
-            "数据工具" => "这里是数据工具的内容区域\n\n• JSON 格式化\n• Base64 编码/解码\n• MD5/SHA 哈希\n• 时间戳转换",
-            "系统信息" => "这里是系统信息的内容区域\n\n• CPU 信息\n• 内存使用情况\n• 磁盘空间\n• 网络接口",
+            "系统设置" => new SmartToolbox.Views.SystemSettingsView() 
+            { 
+                DataContext = new SmartToolbox.ViewModels.SystemSettingsViewModel() 
+            },
             _ => "欢迎使用个人工具箱！\n\n请从左侧选择需要使用的工具。\n\n这个工具箱包含了日常开发和办公中常用的实用工具。"
         };
     }
 }
 
+/// <summary>
+/// 工具项类
+/// 表示一个可用的工具，包含图标、名称和描述
+/// </summary>
 public class ToolItem
 {
+    /// <summary>
+    /// 工具图标（Unicode字符或Emoji）
+    /// </summary>
     public string Icon { get; set; }
+    
+    /// <summary>
+    /// 工具名称
+    /// </summary>
     public string Name { get; set; }
+    
+    /// <summary>
+    /// 工具描述
+    /// </summary>
     public string Description { get; set; }
 
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="icon">工具图标</param>
+    /// <param name="name">工具名称</param>
+    /// <param name="description">工具描述</param>
     public ToolItem(string icon, string name, string description)
     {
         Icon = icon;

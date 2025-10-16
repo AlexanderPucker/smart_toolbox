@@ -1,3 +1,8 @@
+<!-- 
+    应用程序主窗口界面
+    包含侧边栏导航和主要内容区域
+    通过数据绑定与MainWindowViewModel进行交互，实现MVVM架构
+-->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SmartToolbox.ViewModels"
