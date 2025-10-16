@@ -1,3 +1,8 @@
+<!-- 
+    应用程序入口点和全局样式定义
+    配置应用程序级别的资源、样式和数据模板
+    使用Fluent设计主题，并定义全局字体和控件样式
+-->
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SmartToolbox.App"
@@ -6,19 +11,21 @@
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
+        <!-- 视图定位器，用于根据ViewModel自动匹配对应的View -->
         <local:ViewLocator/>
     </Application.DataTemplates>
   
     <Application.Styles>
+        <!-- Fluent设计主题，设置为浅色模式 -->
         <FluentTheme />
         
-        <!-- 全局TextBlock样式 -->
+        <!-- 全局TextBlock样式设置 -->
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
         
-        <!-- 全局Button样式 -->
+        <!-- 全局Button样式设置 -->
         <Style Selector="Button">
             <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
             <Setter Property="FontSize" Value="14"/>
@@ -27,7 +34,7 @@
             <Setter Property="CornerRadius" Value="4"/>
         </Style>
         
-        <!-- 全局TextBox样式 -->
+        <!-- 全局TextBox样式设置 -->
         <Style Selector="TextBox">
             <Setter Property="FontFamily" Value="Microsoft YaHei UI, Consolas, monospace"/>
             <Setter Property="FontSize" Value="14"/>

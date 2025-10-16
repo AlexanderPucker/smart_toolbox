@@ -1,3 +1,8 @@
+<!-- 
+    文件移动功能界面
+    提供文件批量移动、预览、过滤和大小写转换功能
+    包含源文件夹选择、目标文件夹选择、文件类型过滤、文件名大小写转换等操作区域
+-->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -180,4 +185,4 @@
         </Grid>
     </Grid>
 
-</UserControl> 
+</UserControl>

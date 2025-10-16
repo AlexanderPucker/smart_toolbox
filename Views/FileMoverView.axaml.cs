@@ -13,27 +13,38 @@ using System.Threading.Tasks;
 
 namespace SmartToolbox.Views;
 
+/// <summary>
+/// 文件移动视图类
+/// 提供文件批量移动、预览、过滤和大小写转换功能的用户控件
+/// </summary>
 public partial class FileMoverView : UserControl
 {
     // 移动文件功能相关字段
-    private readonly ObservableCollection<string> _sourceFiles = new();
-    private readonly ObservableCollection<string> _movePreviewFiles = new();
-    private readonly List<FileInfo> _filesToMove = new();
-    private string _sourceFolderPath = "";
-    private string _targetFolderPath = "";
+    private readonly ObservableCollection<string> _sourceFiles = new(); // 源文件列表
+    private readonly ObservableCollection<string> _movePreviewFiles = new(); // 移动预览文件列表
+    private readonly List<FileInfo> _filesToMove = new(); // 待移动文件列表
+    private string _sourceFolderPath = ""; // 源文件夹路径
+    private string _targetFolderPath = ""; // 目标文件夹路径
     
     // 异步处理相关字段
-    private CancellationTokenSource? _cancellationTokenSource;
-    private bool _isProcessing = false;
+    private CancellationTokenSource? _cancellationTokenSource; // 取消令牌源，用于取消异步操作
+    private bool _isProcessing = false; // 是否正在处理中
     private const int MAX_FILES_WARNING = 10000; // 文件数量警告阈值
-    private const int BATCH_SIZE = 100; // 批处理大小
+    private const int BATCH_SIZE = 100; // 批处理大小，用于分批处理大量文件以避免UI卡顿
+    
+    // 性能优化相关常量
+    private const int MAX_PREVIEW_FILES = 5000; // 预览文件数量上限，避免预览过多文件导致性能问题
     
     // 滚动同步相关字段
-    private ScrollViewer? _leftScrollViewer;
-    private ScrollViewer? _rightScrollViewer;
-    private bool _isScrollSyncEnabled = true;
-    private bool _scrollSyncInitialized = false;
+    private ScrollViewer? _leftScrollViewer; // 左侧滚动视图
+    private ScrollViewer? _rightScrollViewer; // 右侧滚动视图
+    private bool _isScrollSyncEnabled = true; // 是否启用滚动同步
+    private bool _scrollSyncInitialized = false; // 滚动同步是否已初始化
 
+    /// <summary>
+    /// 文件移动视图构造函数
+    /// 初始化组件和相关控件
+    /// </summary>
     public FileMoverView()
     {
         InitializeComponent();
@@ -60,6 +71,10 @@ public partial class FileMoverView : UserControl
 
     #region 移动文件功能
 
+    /// <summary>
+    /// 初始化移动文件过滤器下拉框
+    /// 设置过滤器选项并默认选择第一项
+    /// </summary>
     private void InitializeMoveFileFilterComboBox()
     {
         var moveFileFilterComboBox = this.FindControl<ComboBox>("MoveFileFilterComboBox");
@@ -70,6 +85,10 @@ public partial class FileMoverView : UserControl
         }
     }
 
+    /// <summary>
+    /// 初始化大小写转换下拉框
+    /// 设置大小写转换选项并默认选择第一项
+    /// </summary>
     private void InitializeCaseConversionComboBox()
     {
         var caseConversionComboBox = this.FindControl<ComboBox>("CaseConversionComboBox");
@@ -80,28 +99,68 @@ public partial class FileMoverView : UserControl
         }
     }
 
+    /// <summary>
+    /// 选择源文件夹事件处理方法
+    /// 异步调用选择源文件夹功能
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">路由事件参数</param>
     private async void SelectSourceFolder(object? sender, RoutedEventArgs e)
     {
-        if (TopLevel.GetTopLevel(this) is not Window window) return;
+        await SelectSourceFolderAsync();
+    }
+    
+    /// <summary>
+    /// 异步选择源文件夹方法
+    /// 使用文件系统选择器让用户选择源文件夹
+    /// </summary>
+    /// <returns>表示异步操作的任务</returns>
+    private async Task SelectSourceFolderAsync()
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
 
-        var folders = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        try
         {
-            Title = "选择源文件夹",
-            AllowMultiple = false
-        });
+            var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "选择源文件夹",
+                AllowMultiple = false
+            });
 
-        if (folders.Count > 0)
+            if (folders.Count > 0)
+            {
+                _sourceFolderPath = folders[0].Path.LocalPath;
+                var sourceFolderText = this.FindControl<TextBlock>("SourceFolderText");
+                if (sourceFolderText != null)
+                    sourceFolderText.Text = _sourceFolderPath;
+                    
+                UpdateStatus($"已选择源文件夹: {_sourceFolderPath}");
+            }
+        }
+        catch (Exception ex)
         {
-            _sourceFolderPath = folders[0].Path.LocalPath;
-            var sourceFolderTextBox = this.FindControl<TextBox>("SourceFolderTextBox");
-            if (sourceFolderTextBox != null)
-                sourceFolderTextBox.Text = _sourceFolderPath;
-            
-            UpdateStatus("已选择源文件夹: " + _sourceFolderPath);
+            UpdateStatus($"选择源文件夹失败: {ex.Message}");
         }
     }
 
+    /// <summary>
+    /// 选择目标文件夹事件处理方法
+    /// 异步调用选择目标文件夹功能
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">路由事件参数</param>
     private async void SelectTargetFolder(object? sender, RoutedEventArgs e)
+    {
+        await SelectTargetFolderAsync();
+    }
+    
+    /// <summary>
+    /// 异步选择目标文件夹方法
+    /// 使用文件系统选择器让用户选择目标文件夹
+    /// </summary>
+    /// <returns>表示异步操作的任务</returns>
+    private async Task SelectTargetFolderAsync()
     {
         if (TopLevel.GetTopLevel(this) is not Window window) return;
 
@@ -122,7 +181,23 @@ public partial class FileMoverView : UserControl
         }
     }
 
+    /// <summary>
+    /// 预览移动文件事件处理方法
+    /// 异步调用预览移动文件功能
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">路由事件参数</param>
     private async void PreviewMoveFiles(object? sender, RoutedEventArgs e)
+    {
+        await PreviewMoveFilesWrapperAsync();
+    }
+    
+    /// <summary>
+    /// 预览移动文件包装方法
+    /// 检查前置条件并调用核心预览方法
+    /// </summary>
+    /// <returns>表示异步操作的任务</returns>
+    private async Task PreviewMoveFilesWrapperAsync()
     {
         if (_isProcessing)
         {
@@ -157,6 +232,11 @@ public partial class FileMoverView : UserControl
         }
     }
 
+    /// <summary>
+    /// 异步预览移动文件核心方法
+    /// 扫描源文件夹中的文件并生成预览列表
+    /// </summary>
+    /// <returns>表示异步操作的任务</returns>
     private async Task PreviewMoveFilesAsync()
     {
         _isProcessing = true;
@@ -221,11 +301,16 @@ public partial class FileMoverView : UserControl
                 await Task.Delay(2000, cancellationToken); // 给用户时间看到警告
                 
                 // 如果文件数量过多，可以考虑只加载前面的文件
-                if (allFiles.Count > MAX_FILES_WARNING * 2)
+                if (allFiles.Count > MAX_PREVIEW_FILES)
                 {
-                    UpdateStatus($"文件数量过多 ({allFiles.Count})，为了性能考虑，只显示前 {MAX_FILES_WARNING} 个文件");
-                    allFiles = allFiles.Take(MAX_FILES_WARNING).ToList();
+                    UpdateStatus($"文件数量过多 ({allFiles.Count})，为了性能考虑，只显示前 {MAX_PREVIEW_FILES} 个文件");
+                    allFiles = allFiles.Take(MAX_PREVIEW_FILES).ToList();
                 }
+            }
+            else if (allFiles.Count > MAX_PREVIEW_FILES)
+            {
+                UpdateStatus($"文件数量较多 ({allFiles.Count})，为了性能考虑，只显示前 {MAX_PREVIEW_FILES} 个文件");
+                allFiles = allFiles.Take(MAX_PREVIEW_FILES).ToList();
             }
 
             // 按文件路径排序
@@ -308,21 +393,33 @@ public partial class FileMoverView : UserControl
 
     private async void ExecuteMoveFiles(object? sender, RoutedEventArgs e)
     {
+        await ExecuteMoveFilesWrapperAsync();
+    }
+    
+    private async Task ExecuteMoveFilesWrapperAsync()
+    {
         if (_isProcessing)
         {
-            UpdateStatus("正在处理中，请稍候...");
+            // 取消当前操作
+            _cancellationTokenSource?.Cancel();
             return;
         }
 
-        if (_filesToMove.Count == 0)
+        if (string.IsNullOrEmpty(_sourceFolderPath) || !Directory.Exists(_sourceFolderPath))
         {
-            UpdateStatus("没有找到要移动的文件，请先点击'预览移动'");
+            UpdateStatus("请先选择一个有效的源文件夹");
             return;
         }
 
         if (string.IsNullOrEmpty(_targetFolderPath) || !Directory.Exists(_targetFolderPath))
         {
-            UpdateStatus("目标文件夹无效");
+            UpdateStatus("请先选择一个有效的目标文件夹");
+            return;
+        }
+
+        if (_filesToMove.Count == 0)
+        {
+            UpdateStatus("没有要移动的文件，请先预览文件");
             return;
         }
 
@@ -332,11 +429,11 @@ public partial class FileMoverView : UserControl
         }
         catch (OperationCanceledException)
         {
-            UpdateStatus("移动操作已取消");
+            UpdateStatus("文件移动操作已取消");
         }
         catch (Exception ex)
         {
-            UpdateStatus($"移动文件失败: {ex.Message}");
+            UpdateStatus($"文件移动失败: {ex.Message}");
         }
     }
 
@@ -495,7 +592,8 @@ public partial class FileMoverView : UserControl
         _sourceFiles.Clear();
         _movePreviewFiles.Clear();
         
-        // 强制垃圾回收，释放内存
+        // 触发垃圾回收以释放内存
+        // 注意：在实际生产环境中，应谨慎使用GC.Collect()，这里仅在明确需要释放大量内存时调用
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
@@ -507,6 +605,13 @@ public partial class FileMoverView : UserControl
 
     #region 大小写转换功能
 
+    /// <summary>
+    /// 转换文件名大小写
+    /// 根据指定的转换类型将文件名转换为大写、小写或标题格式
+    /// </summary>
+    /// <param name="fileName">原始文件名</param>
+    /// <param name="conversionType">大小写转换类型</param>
+    /// <returns>转换后的文件名</returns>
     private string ConvertFileName(string fileName, CaseConversionType conversionType)
     {
         if (string.IsNullOrEmpty(fileName) || conversionType == CaseConversionType.None)
@@ -526,6 +631,12 @@ public partial class FileMoverView : UserControl
         return convertedName + extension;
     }
 
+    /// <summary>
+    /// 将输入字符串转换为标题格式
+    /// 首字母大写，其余字母小写
+    /// </summary>
+    /// <param name="input">输入字符串</param>
+    /// <returns>标题格式的字符串</returns>
     private string ConvertToTitleCase(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -535,6 +646,11 @@ public partial class FileMoverView : UserControl
         return textInfo.ToTitleCase(input.ToLower());
     }
 
+    /// <summary>
+    /// 获取选中的大小写转换类型
+    /// 从下拉框中获取用户选择的转换选项
+    /// </summary>
+    /// <returns>选中的大小写转换类型</returns>
     private CaseConversionType GetSelectedCaseConversion()
     {
         var caseConversionComboBox = this.FindControl<ComboBox>("CaseConversionComboBox");
@@ -549,6 +665,10 @@ public partial class FileMoverView : UserControl
 
     #region 滚动同步
 
+    /// <summary>
+    /// 初始化滚动同步功能
+    /// 延迟初始化以确保控件完全加载后绑定滚动事件
+    /// </summary>
     private void InitializeScrollSync()
     {
         if (_scrollSyncInitialized) return;
@@ -586,8 +706,17 @@ public partial class FileMoverView : UserControl
         }, Avalonia.Threading.DispatcherPriority.Loaded);
     }
 
+    /// <summary>
+    /// 左侧滚动视图滚动变化事件处理方法
+    /// 同步右侧滚动视图的位置
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">滚动变化事件参数</param>
     private void OnLeftScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
+        // 避免在初始化过程中处理滚动事件
+        if (!_scrollSyncInitialized) return;
+        
         if (!_isScrollSyncEnabled || _rightScrollViewer == null) return;
 
         try
@@ -603,6 +732,7 @@ public partial class FileMoverView : UserControl
         catch (Exception ex)
         {
             // 避免滚动同步错误导致崩溃
+            // 在生产环境中，可以考虑使用更完善的日志记录机制
             System.Diagnostics.Debug.WriteLine($"滚动同步错误: {ex.Message}");
         }
         finally
@@ -611,8 +741,17 @@ public partial class FileMoverView : UserControl
         }
     }
 
+    /// <summary>
+    /// 右侧滚动视图滚动变化事件处理方法
+    /// 同步左侧滚动视图的位置
+    /// </summary>
+    /// <param name="sender">事件发送者</param>
+    /// <param name="e">滚动变化事件参数</param>
     private void OnRightScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
+        // 避免在初始化过程中处理滚动事件
+        if (!_scrollSyncInitialized) return;
+        
         if (!_isScrollSyncEnabled || _leftScrollViewer == null) return;
 
         try
@@ -628,6 +767,7 @@ public partial class FileMoverView : UserControl
         catch (Exception ex)
         {
             // 避免滚动同步错误导致崩溃
+            // 在生产环境中，可以考虑使用更完善的日志记录机制
             System.Diagnostics.Debug.WriteLine($"滚动同步错误: {ex.Message}");
         }
         finally
@@ -658,6 +798,10 @@ public partial class FileMoverView : UserControl
 
     #region 资源清理
 
+    /// <summary>
+    /// 释放资源方法
+    /// 取消所有正在进行的操作并清理事件处理程序
+    /// </summary>
     public void Dispose()
     {
         // 取消所有正在进行的操作
@@ -679,6 +823,11 @@ public partial class FileMoverView : UserControl
 
     #region 状态更新
 
+    /// <summary>
+    /// 更新状态信息
+    /// 在界面上显示指定的状态消息
+    /// </summary>
+    /// <param name="message">要显示的状态消息</param>
     private void UpdateStatus(string message)
     {
         var statusText = this.FindControl<TextBlock>("StatusText");
@@ -687,4 +836,4 @@ public partial class FileMoverView : UserControl
     }
 
     #endregion
-} 
+}

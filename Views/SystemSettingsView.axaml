@@ -1,0 +1,108 @@
+<!-- 
+    系统设置视图界面
+    提供应用程序的各种设置选项，包括外观设置、启动行为和其他设置
+    通过数据绑定与SystemSettingsViewModel进行交互
+-->
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SmartToolbox.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.SystemSettingsView"
+             x:DataType="vm:SystemSettingsViewModel">
+
+  <Design.DataContext>
+    <vm:SystemSettingsViewModel/>
+  </Design.DataContext>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- 标题 -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+      <TextBlock Text="⚙️" FontSize="28" Margin="0,0,10,0" VerticalAlignment="Center"/>
+      <TextBlock Text="系统设置" 
+                 FontSize="24" FontWeight="Bold" 
+                 VerticalAlignment="Center"/>
+    </StackPanel>
+
+    <!-- 设置内容 -->
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="20" Margin="0,0,20,0">
+        
+        <!-- 外观设置 -->
+        <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
+                CornerRadius="12" Padding="25">
+          <StackPanel Spacing="20">
+            <TextBlock Text="🎨 外观设置" FontSize="20" FontWeight="SemiBold" 
+                       Foreground="{DynamicResource SystemControlHighlightAccentBrush}"/>
+            
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="15" ColumnSpacing="15">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="主题:" 
+                         VerticalAlignment="Center" Margin="0,0,15,0" FontSize="14"/>
+              <ComboBox Grid.Row="0" Grid.Column="1" SelectedItem="{Binding AppTheme}"
+                        HorizontalAlignment="Stretch" MaxWidth="250">
+                <ComboBoxItem Content="浅色"/>
+                <ComboBoxItem Content="深色"/>
+                <ComboBoxItem Content="跟随系统"/>
+              </ComboBox>
+              
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="语言:" 
+                         VerticalAlignment="Center" Margin="0,0,15,0" FontSize="14"/>
+              <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding Language}"
+                        HorizontalAlignment="Stretch" MaxWidth="250">
+                <ComboBoxItem Content="中文"/>
+                <ComboBoxItem Content="English"/>
+              </ComboBox>
+            </Grid>
+          </StackPanel>
+        </Border>
+        
+        <!-- 启动行为 -->
+        <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
+                CornerRadius="12" Padding="25">
+          <StackPanel Spacing="20">
+            <TextBlock Text="🚀 启动行为" FontSize="20" FontWeight="SemiBold" 
+                       Foreground="{DynamicResource SystemControlHighlightAccentBrush}"/>
+            
+            <StackPanel Spacing="15">
+              <CheckBox Content="开机自启动" IsChecked="{Binding StartWithSystem}" FontSize="14"/>
+              <CheckBox Content="启动后最小化到托盘" IsChecked="{Binding MinimizeToTray}" FontSize="14"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        
+        <!-- 其他设置 -->
+        <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
+                CornerRadius="12" Padding="25">
+          <StackPanel Spacing="20">
+            <TextBlock Text="🔧 其他设置" FontSize="20" FontWeight="SemiBold" 
+                       Foreground="{DynamicResource SystemControlHighlightAccentBrush}"/>
+            
+            <StackPanel Spacing="15">
+              <CheckBox Content="自动检查更新" IsChecked="{Binding CheckUpdates}" FontSize="14"/>
+              <CheckBox Content="自动保存设置" IsChecked="{Binding AutoSave}" FontSize="14"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        
+      </StackPanel>
+    </ScrollViewer>
+    
+    <!-- 按钮区域 -->
+    <StackPanel Grid.Row="2" Orientation="Horizontal" 
+                HorizontalAlignment="Right" Spacing="15" Margin="0,25,0,0">
+      <Button Content="🔄 重置为默认" Command="{Binding ResetSettingsCommand}"
+              Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+              Padding="15,8" CornerRadius="6"/>
+      <Button Content="💾 保存设置" Command="{Binding SaveSettingsCommand}"
+              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+              Padding="15,8" CornerRadius="6"/>
+    </StackPanel>
+  </Grid>
+</UserControl>
