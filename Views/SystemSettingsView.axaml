@@ -1,298 +1,313 @@
 <!-- 
     系统设置视图界面
     提供应用程序的各种设置选项，包括外观设置、启动行为、文件处理、高级设置和关于页面
-    通过数据绑定与SystemSettingsViewModel进行交互
+    采用与文件移动工具类似的代码后台管理方式
 -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:SmartToolbox.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
-             x:Class="SmartToolbox.Views.SystemSettingsView"
-             x:DataType="vm:SystemSettingsViewModel">
-
-  <Design.DataContext>
-    <vm:SystemSettingsViewModel/>
-  </Design.DataContext>
-
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="Auto"/>
-    </Grid.RowDefinitions>
-
-    <!-- 标题 -->
-    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-      <TextBlock Text="⚙️" FontSize="28" Margin="0,0,10,0" VerticalAlignment="Center"/>
-      <TextBlock Text="系统设置" 
-                 FontSize="24" FontWeight="Bold" 
-                 VerticalAlignment="Center"/>
-    </StackPanel>
-
-    <!-- Tab导航和内容 -->
-    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}" Classes="modernTabControl">
-      
-      <!-- 外观设置 -->
-      <TabItem Header="🎨 外观设置" Classes="modernTabItem">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="25">
-              <StackPanel Spacing="20">
-                <TextBlock Text="🎨 外观设置" Classes="title"/>
-
-                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="20" ColumnSpacing="20">
-                  <TextBlock Grid.Row="0" Grid.Column="0" Text="主题:" Classes="label"/>
-                  <ComboBox Grid.Row="0" Grid.Column="1" SelectedItem="{Binding AppTheme}"
-                            HorizontalAlignment="Stretch" MaxWidth="300"
-                            Classes="modernComboBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14">
-                    <ComboBoxItem Content="浅色"/>
-                    <ComboBoxItem Content="深色"/>
-                    <ComboBoxItem Content="跟随系统"/>
-                  </ComboBox>
-
-                  <TextBlock Grid.Row="1" Grid.Column="0" Text="语言:" Classes="label"/>
-                  <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding Language}"
-                            HorizontalAlignment="Stretch" MaxWidth="300"
-                            Classes="modernComboBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14">
-                    <ComboBoxItem Content="中文"/>
-                    <ComboBoxItem Content="English"/>
-                  </ComboBox>
-                </Grid>
-                
-                <TextBlock Text="选择您喜欢的界面主题和显示语言"
-                           FontSize="12" Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           Margin="0,5,0,0"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- 启动行为 -->
-      <TabItem Header="🚀 启动行为" Classes="modernTabItem">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="25">
-              <StackPanel Spacing="20">
-                <TextBlock Text="🚀 启动行为" Classes="title"/>
-
-                <StackPanel Spacing="15">
-                  <CheckBox Content="开机自启动" IsChecked="{Binding StartWithSystem}" FontSize="14"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                  <CheckBox Content="启动后最小化到托盘" IsChecked="{Binding MinimizeToTray}" FontSize="14"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                </StackPanel>
-
-                <TextBlock Text="配置应用程序的启动和运行行为"
-                           FontSize="12" Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           Margin="0,5,0,0"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- 其他设置 -->
-      <TabItem Header="🔧 其他设置" Classes="modernTabItem">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="25">
-              <StackPanel Spacing="20">
-                <TextBlock Text="🔧 其他设置" Classes="title"/>
-
-                <StackPanel Spacing="15">
-                  <CheckBox Content="自动检查更新" IsChecked="{Binding CheckUpdates}" FontSize="14"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                  <CheckBox Content="自动保存设置" IsChecked="{Binding AutoSave}" FontSize="14"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                </StackPanel>
-
-                <TextBlock Text="配置应用程序的更新和保存行为"
-                           FontSize="12" Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           Margin="0,5,0,0"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- 文件处理设置 -->
-      <TabItem Header="📁 文件处理" Classes="modernTabItem">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="25">
-              <StackPanel Spacing="20">
-                <TextBlock Text="📁 文件处理设置" Classes="title"/>
-
-                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="20" ColumnSpacing="20">
-                  <TextBlock Grid.Row="0" Grid.Column="0" Text="默认保存路径:" Classes="label"/>
-                  <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10">
-                    <TextBox Text="{Binding DefaultSavePath}" IsReadOnly="True"
-                             HorizontalAlignment="Stretch" MaxWidth="400"
-                             Classes="modernTextBox"
-                             FontFamily="Microsoft YaHei UI, Consolas, monospace" FontSize="14"/>
-                    <Button Content="浏览..." Command="{Binding SelectSavePathCommand}"
-                            Classes="modernButton"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14"/>
-                  </StackPanel>
-
-                  <TextBlock Grid.Row="1" Grid.Column="0" Text="文件命名规则:" Classes="label"/>
-                  <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding FileNamingRule}"
-                            HorizontalAlignment="Stretch" MaxWidth="300"
-                            Classes="modernComboBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14">
-                    <ComboBoxItem Content="原文件名_时间戳"/>
-                    <ComboBoxItem Content="原文件名_序号"/>
-                    <ComboBoxItem Content="时间戳_原文件名"/>
-                  </ComboBox>
-
-                  <TextBlock Grid.Row="2" Grid.Column="0" Text="创建备份:" Classes="label"/>
-                  <CheckBox Grid.Row="2" Grid.Column="1" Content="启用文件备份"
-                            IsChecked="{Binding CreateBackup}" FontSize="14" VerticalAlignment="Center"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-
-                  <TextBlock Grid.Row="3" Grid.Column="0" Text="备份文件数量:" Classes="label"/>
-                  <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding BackupFileCount}"
-                                 Minimum="1" Maximum="20" HorizontalAlignment="Left" Width="100"
-                                 Classes="modernNumericUpDown"
-                                 FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14"/>
-                </Grid>
-
-                <TextBlock Text="配置文件保存、命名和备份的相关设置"
-                           FontSize="12" Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           Margin="0,5,0,0"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- 高级设置 -->
-      <TabItem Header="⚙️ 高级设置" Classes="modernTabItem">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="25">
-              <StackPanel Spacing="20">
-                <TextBlock Text="⚙️ 高级设置" Classes="title"/>
-
-                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="20" ColumnSpacing="20">
-                  <TextBlock Grid.Row="0" Grid.Column="0" Text="启用日志记录:" Classes="label"/>
-                  <CheckBox Grid.Row="0" Grid.Column="1" Content="启用详细日志"
-                            IsChecked="{Binding EnableLogging}" FontSize="14" VerticalAlignment="Center"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-
-                  <TextBlock Grid.Row="1" Grid.Column="0" Text="日志级别:" Classes="label"/>
-                  <ComboBox Grid.Row="1" Grid.Column="1" SelectedItem="{Binding LogLevel}"
-                            HorizontalAlignment="Stretch" MaxWidth="200"
-                            Classes="modernComboBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14">
-                    <ComboBoxItem Content="信息"/>
-                    <ComboBoxItem Content="警告"/>
-                    <ComboBoxItem Content="错误"/>
-                  </ComboBox>
-
-                  <TextBlock Grid.Row="2" Grid.Column="0" Text="调试模式:" Classes="label"/>
-                  <CheckBox Grid.Row="2" Grid.Column="1" Content="启用调试模式"
-                            IsChecked="{Binding EnableDebugMode}" FontSize="14" VerticalAlignment="Center"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-
-                  <TextBlock Grid.Row="3" Grid.Column="0" Text="实验性功能:" Classes="label"/>
-                  <CheckBox Grid.Row="3" Grid.Column="1" Content="启用实验性功能"
-                            IsChecked="{Binding EnableExperimentalFeatures}" FontSize="14" VerticalAlignment="Center"
-                            Classes="modernCheckBox"
-                            FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                </Grid>
-
-                <TextBlock Text="配置高级功能和调试选项（仅限高级用户）"
-                           FontSize="12" Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           Margin="0,5,0,0"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
-      <!-- 关于 -->
-      <TabItem Header="ℹ️ 关于">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="20">
-          <StackPanel Spacing="25">
-            <Border Background="{DynamicResource SystemControlAcrylicWindowBrush}" 
-                    CornerRadius="12" Padding="30">
-              <StackPanel Spacing="25" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
-                  <TextBlock Text="📦" FontSize="48" VerticalAlignment="Center"
-                             FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                  <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding AppName}" FontSize="28" FontWeight="Bold"
-                               HorizontalAlignment="Center"
-                               FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                    <TextBlock Text="版本 {Binding AppVersion}" FontSize="16"
-                               Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                               HorizontalAlignment="Center" Margin="0,5,0,0"
-                               FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <TextBlock Text="一个智能的工具箱应用程序，提供文件管理、批量操作等功能"
-                           FontSize="16" HorizontalAlignment="Center" TextWrapping="Wrap"
-                           Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                           FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-
-                <StackPanel Spacing="10" HorizontalAlignment="Center">
-                  <TextBlock Text="{Binding Copyright}" FontSize="12"
-                             HorizontalAlignment="Center"
-                             Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                             FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                  <TextBlock Text="开源许可证: {Binding License}" FontSize="12"
-                             HorizontalAlignment="Center"
-                             Foreground="{DynamicResource SystemControlDisabledTextBrush}"
-                             FontFamily="Microsoft YaHei UI, Segoe UI, Arial"/>
-                </StackPanel>
-
-                <Button Content="🔗 访问 GitHub" Command="{Binding OpenGitHubCommand}"
-                        HorizontalAlignment="Center" Padding="20,10" CornerRadius="8"
-                        Background="{DynamicResource SystemControlBackgroundAccentBrush}"
-                        FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14"/>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-      
-    </TabControl>
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.SystemSettingsView">
     
-    <!-- 按钮区域 -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal"
-                HorizontalAlignment="Right" Spacing="15" Margin="0,25,0,0">
-      <Button Content="🔄 重置为默认" Command="{Binding ResetSettingsCommand}"
-              Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-              Padding="15,8" CornerRadius="6"
-              FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14"/>
-      <Button Content="💾 保存设置" Command="{Binding SaveSettingsCommand}"
-              Background="{DynamicResource SystemControlBackgroundAccentBrush}"
-              Padding="15,8" CornerRadius="6"
-              FontFamily="Microsoft YaHei UI, Segoe UI, Arial" FontSize="14"/>
-    </StackPanel>
-  </Grid>
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12,8"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#005A9B"/>
+        </Style>
+        <Style Selector="Button:pressed">
+            <Setter Property="Background" Value="#004578"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#DC3545"/>
+        </Style>
+        <Style Selector="Button.danger:pointerover">
+            <Setter Property="Background" Value="#C82333"/>
+        </Style>
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="#28A745"/>
+        </Style>
+        <Style Selector="Button.success:pointerover">
+            <Setter Property="Background" Value="#218838"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0" Spacing="15">
+
+            <!-- 标题 -->
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
+                <TextBlock Text="⚙️" FontSize="24" VerticalAlignment="Center"/>
+                <TextBlock Text="系统设置" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 外观设置 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="🎨 外观设置" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="主题:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <ComboBox Grid.Column="1" Name="ThemeComboBox" 
+                              SelectedIndex="0"
+                              HorizontalAlignment="Stretch"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="选择您喜欢的界面主题" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="语言:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <ComboBox Grid.Column="1" Name="LanguageComboBox" 
+                              SelectedIndex="0"
+                              HorizontalAlignment="Stretch"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="选择显示语言" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- 启动行为 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="🚀 启动行为" FontSize="16" FontWeight="Bold" Margin="0,15,0,10"/>
+                
+                <CheckBox Name="StartWithSystemCheckBox" 
+                          Margin="0,0,0,5"
+                          FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                          FontSize="14"
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                    <CheckBox.Content>
+                        <TextBlock Text="开机自启动" 
+                                   FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    </CheckBox.Content>
+                </CheckBox>
+                <CheckBox Name="MinimizeToTrayCheckBox" 
+                          Margin="0,0,0,10"
+                          FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                          FontSize="14"
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                    <CheckBox.Content>
+                        <TextBlock Text="启动后最小化到托盘" 
+                                   FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    </CheckBox.Content>
+                </CheckBox>
+            </StackPanel>
+
+            <!-- 其他设置 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="🔧 其他设置" FontSize="16" FontWeight="Bold" Margin="0,15,0,10"/>
+                
+                <CheckBox Name="CheckUpdatesCheckBox" 
+                          Margin="0,0,0,5"
+                          FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                          FontSize="14"
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                    <CheckBox.Content>
+                        <TextBlock Text="自动检查更新" 
+                                   FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    </CheckBox.Content>
+                </CheckBox>
+                <CheckBox Name="AutoSaveCheckBox" 
+                          Margin="0,0,0,10"
+                          FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                          FontSize="14"
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                    <CheckBox.Content>
+                        <TextBlock Text="自动保存设置" 
+                                   FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    </CheckBox.Content>
+                </CheckBox>
+            </StackPanel>
+
+            <!-- 文件处理设置 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="📁 文件处理设置" FontSize="16" FontWeight="Bold" Margin="0,15,0,10"/>
+                
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="默认保存路径:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <TextBox Grid.Column="1" Name="DefaultSavePathTextBox" 
+                             Watermark="选择文件默认保存路径..."
+                             IsReadOnly="True"
+                             Margin="10,0,0,0"/>
+                    <Button Grid.Column="2" 
+                            Margin="10,0,0,0" 
+                            Name="BrowseSavePathButton">
+                        <TextBlock Text="浏览..."/>
+                    </Button>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="文件命名规则:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <ComboBox Grid.Column="1" Name="FileNamingRuleComboBox" 
+                              SelectedIndex="0"
+                              HorizontalAlignment="Stretch"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="设置文件命名规则" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="创建备份:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <CheckBox Grid.Column="1" Name="CreateBackupCheckBox" 
+                              Content="启用文件备份" 
+                              VerticalAlignment="Center"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="是否创建备份文件" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="备份文件数量:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <NumericUpDown Grid.Column="1" Name="BackupFileCountNumeric"
+                                   Value="5" Minimum="1" Maximum="20"
+                                   HorizontalAlignment="Left" Width="100"
+                                   Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="设置备份文件数量上限" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- 高级设置 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="⚙️ 高级设置" FontSize="16" FontWeight="Bold" Margin="0,15,0,10"/>
+                
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="启用日志记录:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <CheckBox Grid.Column="1" Name="EnableLoggingCheckBox" 
+                              Content="启用详细日志" 
+                              VerticalAlignment="Center"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="记录应用程序日志" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="日志级别:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <ComboBox Grid.Column="1" Name="LogLevelComboBox" 
+                              SelectedIndex="0"
+                              HorizontalAlignment="Stretch"
+                              Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="设置日志记录级别" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="调试模式:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <CheckBox Grid.Column="1" Name="EnableDebugModeCheckBox" 
+                              VerticalAlignment="Center"
+                              Margin="10,0,0,0"
+                              FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                              FontSize="14"
+                              Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                        <CheckBox.Content>
+                            <TextBlock Text="启用调试模式" 
+                                       FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                        </CheckBox.Content>
+                    </CheckBox>
+                    <TextBlock Grid.Column="2" Text="启用额外调试信息" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Grid.Column="0" Text="实验性功能:" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                    <CheckBox Grid.Column="1" Name="EnableExperimentalFeaturesCheckBox" 
+                              VerticalAlignment="Center"
+                              Margin="10,0,0,0"
+                              FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                              FontSize="14"
+                              Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}">
+                        <CheckBox.Content>
+                            <TextBlock Text="启用实验性功能" 
+                                       FontFamily="Microsoft YaHei UI, Microsoft YaHei, Segoe UI, Arial"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                        </CheckBox.Content>
+                    </CheckBox>
+                    <TextBlock Grid.Column="2" Text="启用未完成的功能" 
+                               VerticalAlignment="Center" FontSize="12" 
+                               Foreground="#666666" Margin="10,0,0,0"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- 关于 -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="ℹ️ 关于" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,15,0,10"/>
+                
+                <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                        <TextBlock Text="📦" FontSize="36" VerticalAlignment="Center"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Name="AppNameText" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Name="AppVersionText" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <TextBlock Name="AppDescriptionText" FontSize="14" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+
+                    <StackPanel Spacing="5" HorizontalAlignment="Center">
+                        <TextBlock Name="CopyrightText" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Name="LicenseText" FontSize="12" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button Name="OpenGitHubButton" 
+                            HorizontalAlignment="Center" 
+                            Padding="15,8" 
+                            Margin="0,10,0,0">
+                        <TextBlock Text="🔗 访问 GitHub"/>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 操作按钮 -->
+            <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Right" Margin="0,15,0,0">
+                <Button Name="ResetSettingsButton" Classes="danger">
+                    <TextBlock Text="🔄 重置为默认"/>
+                </Button>
+                <Button Name="SaveSettingsButton" Classes="success">
+                    <TextBlock Text="💾 保存设置"/>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
 </UserControl>

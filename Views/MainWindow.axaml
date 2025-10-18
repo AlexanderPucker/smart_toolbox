@@ -29,13 +29,13 @@
         </Grid.ColumnDefinitions>
 
         <!-- 侧边栏 -->
-        <Border Grid.Column="0" Background="#F5F5F7" BorderBrush="#E5E5E7" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,1,0">
             <StackPanel Margin="20">
                 <!-- 标题 -->
                 <TextBlock Text="🧰 个人工具箱" 
                           FontSize="24" 
                           FontWeight="Bold" 
-                          Foreground="#333333"
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
                           Margin="0,0,0,30"/>
 
                 <!-- 工具列表 -->
@@ -55,10 +55,10 @@
                                     CommandParameter="{Binding}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover">
-                                        <Setter Property="Background" Value="#E8E8EA"/>
+                                        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}"/>
                                     </Style>
                                     <Style Selector="Button:pressed">
-                                        <Setter Property="Background" Value="#D1D1D6"/>
+                                        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListMediumBrush}"/>
                                     </Style>
                                 </Button.Styles>
                                 
@@ -66,15 +66,16 @@
                                     <TextBlock Text="{Binding Icon}" 
                                               FontSize="20" 
                                               VerticalAlignment="Center"
-                                              Margin="0,0,12,0"/>
+                                              Margin="0,0,12,0"
+                                              Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" 
                                                   FontSize="14" 
                                                   FontWeight="Medium"
-                                                  Foreground="#333333"/>
+                                                  Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                         <TextBlock Text="{Binding Description}" 
                                                   FontSize="11" 
-                                                  Foreground="#666666"
+                                                  Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                   TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -94,19 +95,19 @@
 
             <!-- 顶部标题栏 -->
             <Border Grid.Row="0" 
-                    Background="#FFFFFF" 
-                    BorderBrush="#E5E5E7" 
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}" 
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
                     BorderThickness="0,0,0,1"
                     Padding="30,20">
                 <TextBlock Text="{Binding SelectedToolName}" 
                           FontSize="28" 
                           FontWeight="Bold" 
-                          Foreground="#333333"/>
+                          Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
             </Border>
 
             <!-- 内容区域 -->
             <Border Grid.Row="1" 
-                    Background="#FFFFFF">
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
                 <ContentPresenter Content="{Binding CurrentContent}">
                     <ContentPresenter.DataTemplates>
                         <DataTemplate DataType="x:String">
@@ -114,7 +115,7 @@
                                 <TextBlock Text="{Binding}" 
                                           FontSize="14" 
                                           LineHeight="24"
-                                          Foreground="#555555"
+                                          Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                           TextWrapping="Wrap"/>
                             </ScrollViewer>
                         </DataTemplate>
