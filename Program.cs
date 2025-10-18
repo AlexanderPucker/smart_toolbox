@@ -1,5 +1,6 @@
 using Avalonia;
 using System;
+using System.Diagnostics;
 
 namespace SmartToolbox;
 
@@ -16,8 +17,21 @@ sealed class Program
     /// </summary>
     /// <param name="args">命令行参数</param>
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        try
+        {
+            Debug.WriteLine("正在启动 Smart Toolbox...");
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"启动失败: {ex.Message}");
+            Debug.WriteLine($"详细信息: {ex}");
+            throw;
+        }
+    }
 
     /// <summary>
     /// Avalonia配置方法，不要移除；可视化设计器也会使用

@@ -39,5 +39,197 @@
             <Setter Property="FontFamily" Value="Microsoft YaHei UI, Consolas, monospace"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
+
+        <!-- TabControl样式设置 -->
+        <Style Selector="TabControl">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- TabItem样式设置 -->
+        <Style Selector="TabItem">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseBrush}"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <!-- TabItem选中状态样式 -->
+        <Style Selector="TabItem:selected">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <!-- TabItem悬停状态样式 -->
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}"/>
+        </Style>
+
+        <!-- TabItem内容区域样式 -->
+        <Style Selector="TabItem > ContentPresenter">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        
+        <!-- 现代化TabControl样式 -->
+    <Style Selector="TabControl.modernTabControl">
+      <Setter Property="Background" Value="{DynamicResource SystemControlAcrylicWindowBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+        
+        <!-- 现代化TabItem样式 -->
+        <Style Selector="TabItem.modernTabItem">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8,8,0,0"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Header}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        
+        <Style Selector="TabItem.modernTabItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        </Style>
+        
+        <Style Selector="TabItem.modernTabItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundAccentBrush}"/>
+        </Style>
+        
+        <!-- 现代化ComboBox样式 -->
+        <Style Selector="ComboBox.modernComboBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="ComboBox.modernComboBox:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        </Style>
+        
+        <Style Selector="ComboBox.modernComboBox /template/ Border#PART_Border">
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+        
+        <!-- 现代化CheckBox样式 -->
+        <Style Selector="CheckBox.modernCheckBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="CheckBox.modernCheckBox:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+        </Style>
+        
+        <!-- 现代化TextBox样式 -->
+        <Style Selector="TextBox.modernTextBox">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Consolas, monospace"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="TextBox.modernTextBox:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundAccentBrush}"/>
+        </Style>
+        
+        <!-- 现代化Button样式 -->
+        <Style Selector="Button.modernButton">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAccentBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundChromeWhiteBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="Button.modernButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAccentDarkBrush}"/>
+        </Style>
+        
+        <Style Selector="Button.modernButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAccentDarkerBrush}"/>
+        </Style>
+        
+        <!-- 现代化NumericUpDown样式 -->
+        <Style Selector="NumericUpDown.modernNumericUpDown">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+        
+        <Style Selector="NumericUpDown.modernNumericUpDown:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundAccentBrush}"/>
+        </Style>
+
+        <!-- 边框内的TextBlock样式增强 -->
+        <Style Selector="Border TextBlock">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- 标题TextBlock样式 -->
+        <Style Selector="TextBlock.title">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}"/>
+        </Style>
+
+        <!-- 标签TextBlock样式 -->
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Application.Styles>
 </Application>
