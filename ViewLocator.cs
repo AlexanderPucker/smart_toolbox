@@ -21,7 +21,7 @@ public class ViewLocator : IDataTemplate
     {
         if (param is null)
             return null;
-        
+
         // 将视图模型类型名称中的"ViewModel"替换为"View"来构造视图类型名称
         var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
         var type = Type.GetType(name);
@@ -31,7 +31,7 @@ public class ViewLocator : IDataTemplate
             // 创建并返回视图实例
             return (Control)Activator.CreateInstance(type)!;
         }
-        
+
         // 如果未找到对应的视图类型，返回显示错误信息的TextBlock
         return new TextBlock { Text = "Not Found: " + name };
     }
