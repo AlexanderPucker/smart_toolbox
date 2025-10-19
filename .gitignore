@@ -403,5 +403,8 @@ Thumbs.db
 *.axaml.cs.bak
 AvaloniaDesigner.log
 
+# Spec workflow files
+.spec-workflow/
+
 # Publish profiles
 Properties/PublishProfiles/ 
