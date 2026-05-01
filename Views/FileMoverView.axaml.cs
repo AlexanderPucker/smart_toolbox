@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SmartToolbox.Views;
 
-public partial class FileMoverView : UserControl
+public partial class FileMoverView : UserControl, IDisposable
 {
     // 移动文件功能相关字段
     private readonly ObservableCollection<string> _sourceFiles = new();
@@ -37,7 +37,9 @@ public partial class FileMoverView : UserControl
     public FileMoverView()
     {
         InitializeComponent();
-        
+
+        Unloaded += (_, _) => Dispose();
+
         // 初始化源文件列表
         var sourceFilesList = this.FindControl<ListBox>("SourceFilesList");
         if (sourceFilesList != null)
@@ -194,21 +196,21 @@ public partial class FileMoverView : UserControl
 
             // 异步扫描文件
             var allFiles = new List<FileInfo>();
+            var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             await Task.Run(() =>
             {
                 foreach (var pattern in patterns)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     var files = Directory.GetFiles(_sourceFolderPath, pattern, searchOption);
                     foreach (var file in files)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        
-                        var fileInfo = new FileInfo(file);
-                        if (!allFiles.Any(f => f.FullName == fileInfo.FullName))
+
+                        if (seenPaths.Add(file))
                         {
-                            allFiles.Add(fileInfo);
+                            allFiles.Add(new FileInfo(file));
                         }
                     }
                 }
@@ -254,7 +256,7 @@ public partial class FileMoverView : UserControl
                         
                         // 右侧显示：目标文件夹+转换后的文件名
                         var targetFileName = ConvertFileName(file.Name, caseConversion);
-                        var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}\\{targetFileName}";
+                        var targetDisplay = $"{Path.GetFileName(_targetFolderPath)}{Path.DirectorySeparatorChar}{targetFileName}";
                         _movePreviewFiles.Add(targetDisplay);
                     }
                 });
@@ -479,12 +481,7 @@ public partial class FileMoverView : UserControl
         _filesToMove.Clear();
         _sourceFiles.Clear();
         _movePreviewFiles.Clear();
-        
-        // 强制垃圾回收，释放内存
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        
+
         UpdateStatus("已清除移动预览");
     }
 
