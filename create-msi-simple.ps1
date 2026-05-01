@@ -26,7 +26,7 @@ if (-not $msiDeployPath) {
 [Setup]
 AppName=Smart Toolbox
 AppVersion=$Version
-AppPublisher=Your Company
+AppPublisher=Smart Toolbox
 AppPublisherURL=https://yourcompany.com
 AppSupportURL=https://yourcompany.com/support
 AppUpdatesURL=https://yourcompany.com/updates
@@ -81,7 +81,7 @@ try {
     Write-Host "正在创建 MSI 安装包..." -ForegroundColor Yellow
     
     # 使用 dotnet-msideploy 创建 MSI
-    & dotnet-msideploy -s $publishPath -o $msiPath -n "Smart Toolbox" -v $Version -p "Your Company"
+    & dotnet-msideploy -s $publishPath -o $msiPath -n "Smart Toolbox" -v $Version -p "Smart Toolbox"
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✓ MSI 安装包创建成功: $msiPath" -ForegroundColor Green

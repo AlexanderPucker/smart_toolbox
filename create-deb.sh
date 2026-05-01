@@ -21,7 +21,7 @@ Section: utils
 Priority: optional
 Architecture: amd64
 Depends: 
-Maintainer: Your Company <your-email@company.com>
+Maintainer: Smart Toolbox <smarttoolbox@example.com>
 Description: Smart Toolbox - 一个智能工具箱应用程序
  Smart Toolbox 是一个功能丰富的工具箱应用程序。
 EOF

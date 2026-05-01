@@ -35,7 +35,7 @@ $wxsContent = @"
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="Smart Toolbox" 
            Version="$Version" 
-           Manufacturer="Your Company" 
+           Manufacturer="Smart Toolbox" 
            UpgradeCode="12345678-1234-1234-1234-123456789012">
     
     <MajorUpgrade DowngradeErrorMessage="A newer version of Smart Toolbox is already installed." />

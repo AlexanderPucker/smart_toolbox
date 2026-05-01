@@ -10,7 +10,7 @@
     <!-- 应用程序信息 -->
     <AssemblyTitle>Smart Toolbox</AssemblyTitle>
     <AssemblyDescription>一个智能工具箱应用程序</AssemblyDescription>
-    <AssemblyCompany>Your Company</AssemblyCompany>
+    <AssemblyCompany>Smart Toolbox</AssemblyCompany>
     <AssemblyProduct>Smart Toolbox</AssemblyProduct>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
@@ -25,7 +25,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
