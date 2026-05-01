@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.TimestampView"
+             x:DataType="vm:TimestampViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto">
+        <!-- 当前时间 -->
+        <Border Grid.Row="0" Background="#E8F4FD" CornerRadius="6" Padding="16,12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="当前时间" FontWeight="Bold" FontSize="15"/>
+                <StackPanel Orientation="Horizontal" Spacing="30">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Unix:" VerticalAlignment="Center" Foreground="#555"/>
+                        <TextBlock Text="{Binding CurrentTimestamp}" FontFamily="Consolas, monospace"
+                                   FontWeight="Medium" FontSize="15"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="日期:" VerticalAlignment="Center" Foreground="#555"/>
+                        <TextBlock Text="{Binding CurrentDateTime}" FontFamily="Consolas, monospace"
+                                   FontWeight="Medium" FontSize="15"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="1" Spacing="12" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{Binding TimestampToDateCommand}">
+                    <TextBlock Text="时间戳 → 日期"/>
+                </Button>
+                <Button Classes="success" Command="{Binding DateToTimestampCommand}">
+                    <TextBlock Text="日期 → 时间戳"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding UseCurrentTimeCommand}">
+                    <TextBlock Text="使用当前时间"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding ClearCommand}">
+                    <TextBlock Text="清空"/>
+                </Button>
+                <CheckBox Content="毫秒级" IsChecked="{Binding IsMilliseconds}"
+                          VerticalAlignment="Center" Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,16,*">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Text="时间戳" FontWeight="Medium" FontSize="14"/>
+                    <TextBox Text="{Binding TimestampInput}" FontFamily="Consolas, monospace"
+                             FontSize="14" Watermark="如: 1700000000000"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <TextBlock Text="日期时间" FontWeight="Medium" FontSize="14"/>
+                    <TextBox Text="{Binding DateTimeInput}" FontFamily="Consolas, monospace"
+                             FontSize="14" Watermark="如: 2024-01-01 12:00:00"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+
+        <!-- 转换结果 -->
+        <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="6" Padding="16,12" Margin="0,16,0,0">
+            <StackPanel Spacing="6">
+                <TextBlock Text="转换结果" FontWeight="Bold" FontSize="15"/>
+                <TextBlock Text="{Binding ConvertedResult}" FontFamily="Consolas, monospace"
+                           FontSize="14" TextWrapping="Wrap" Foreground="#333"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Background="#F8F9FA" CornerRadius="5" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="13"/>
+        </Border>
+    </Grid>
+</UserControl>

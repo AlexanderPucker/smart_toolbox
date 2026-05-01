@@ -30,11 +30,12 @@
 
         <!-- 侧边栏 -->
         <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20">
                 <!-- 标题 -->
-                <TextBlock Text="🧰 个人工具箱" 
-                          FontSize="24" 
-                          FontWeight="Bold" 
+                <TextBlock Text="🧰 个人工具箱"
+                          FontSize="24"
+                          FontWeight="Bold"
                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
                           Margin="0,0,0,30"/>
 
@@ -84,6 +85,7 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
+            </ScrollViewer>
         </Border>
 
         <!-- 主内容区域 -->

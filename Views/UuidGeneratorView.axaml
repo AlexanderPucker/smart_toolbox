@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.UuidGeneratorView"
+             x:DataType="vm:UuidGeneratorViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="0" Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{Binding GenerateCommand}">
+                    <TextBlock Text="生成 UUID"/>
+                </Button>
+                <Button Classes="success" Command="{Binding CopyOutputCommand}">
+                    <TextBlock Text="复制"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding ClearCommand}">
+                    <TextBlock Text="清空"/>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="数量:" VerticalAlignment="Center"/>
+                    <NumericUpDown Value="{Binding GenerateCount}" Minimum="1" Maximum="1000"
+                                   FormatString="F0" Width="100" FontSize="13"/>
+                </StackPanel>
+                <CheckBox Content="大写" IsChecked="{Binding IsUpperCase}" VerticalAlignment="Center"/>
+                <CheckBox Content="花括号" IsChecked="{Binding WithBraces}" VerticalAlignment="Center"/>
+                <CheckBox Content="连字符" IsChecked="{Binding WithHyphens}" VerticalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- 输出 -->
+        <TextBox Grid.Row="1" Text="{Binding OutputText}" IsReadOnly="True"
+                 FontFamily="Consolas, monospace" FontSize="14"
+                 AcceptsReturn="True" TextWrapping="NoWrap"
+                 Background="#FAFAFA"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 Margin="0,12,0,0"/>
+
+        <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="5" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="13"/>
+        </Border>
+    </Grid>
+</UserControl>

@@ -32,6 +32,9 @@ public partial class MainWindowViewModel : ViewModelBase
         Tools.Add(new ToolItem("📁", "文件移动工具", "文件移动、批量操作等"));
         Tools.Add(new ToolItem("📋", "JSON格式化", "JSON格式化、压缩、校验"));
         Tools.Add(new ToolItem("🔐", "哈希计算器", "MD5、SHA1、SHA256、SHA512"));
+        Tools.Add(new ToolItem("🔄", "Base64编解码", "Base64编码、解码、URL安全"));
+        Tools.Add(new ToolItem("⏱️", "时间戳转换", "Unix时间戳与日期互转"));
+        Tools.Add(new ToolItem("🆔", "UUID生成器", "批量生成UUID/GUID"));
         Tools.Add(new ToolItem("🔢", "计算器", "数学计算、单位转换"));
         Tools.Add(new ToolItem("🎨", "颜色工具", "颜色选择、格式转换"));
         Tools.Add(new ToolItem("🌐", "网络工具", "URL编码、IP查询等"));
@@ -54,6 +57,9 @@ public partial class MainWindowViewModel : ViewModelBase
             "文件移动工具" => new SmartToolbox.Views.FileMoverView(),
             "JSON格式化" => new SmartToolbox.Views.JsonFormatterView(),
             "哈希计算器" => new SmartToolbox.Views.HashCalculatorView(),
+            "Base64编解码" => new SmartToolbox.Views.Base64View(),
+            "时间戳转换" => new SmartToolbox.Views.TimestampView(),
+            "UUID生成器" => new SmartToolbox.Views.UuidGeneratorView(),
             "计算器" => "这里是计算器的内容区域\n\n• 基础数学运算\n• 科学计算\n• 单位转换\n• 进制转换",
             "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
             "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",
