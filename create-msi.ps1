@@ -64,14 +64,17 @@ $wxsContent = @"
         </File>
       </Component>
       
-      <!-- 添加其他必要的文件 -->
-      <Component Id="AppConfig">
-        <File Id="AppConfig" Source="publish\SmartToolbox-$Version-$Platform\SmartToolbox.dll" />
-      </Component>
-      
       <!-- 运行时文件 -->
       <Component Id="RuntimeFiles">
-        <File Id="RuntimeFiles" Source="publish\SmartToolbox-$Version-$Platform\*" />
+        <File Id="RuntimeFiles" Source="publish\SmartToolbox-$Version-$Platform\av_libglesv2.dll" />
+      </Component>
+      
+      <Component Id="LibHarfBuzzSharp">
+        <File Id="LibHarfBuzzSharp" Source="publish\SmartToolbox-$Version-$Platform\libHarfBuzzSharp.dll" />
+      </Component>
+      
+      <Component Id="LibSkiaSharp">
+        <File Id="LibSkiaSharp" Source="publish\SmartToolbox-$Version-$Platform\libSkiaSharp.dll" />
       </Component>
     </ComponentGroup>
     
@@ -104,4 +107,4 @@ try {
     Write-Host "✗ 构建过程中发生错误: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Host "`n要测试安装包，请运行: msiexec /i $msiPath" -ForegroundColor Cyan 
+Write-Host "`n要测试安装包，请运行: msiexec /i $msiPath" -ForegroundColor Cyan

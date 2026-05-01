@@ -1,58 +1,60 @@
-# 智能工具箱 - SmartToolbox
+# Smart Toolbox
 
-一个基于 Avalonia UI 框架的跨平台个人工具箱应用程序，提供日常开发和办公中常用的实用工具。
+一个基于 Avalonia UI 的跨平台工具箱应用程序，使用 .NET 8 和 MVVM 模式构建。
 
 ## 功能特性
 
-- 🖥️ **跨平台支持** - 基于 Avalonia UI，支持 Windows、macOS 和 Linux
-- 🎨 **现代化界面** - 清洁、直观的用户界面设计
-- 🧩 **模块化架构** - 基于 MVVM 模式，易于扩展和维护
-- ⚡ **高性能** - 基于 .NET 8 和 Avalonia 11.3+
+### 已实现的功能
 
-## 当前工具模块
+- 文件移动和重命名工具
+  - 批量文件移动和重命名
+  - 大小写转换选项
+  - 文件过滤规则
+  - 实时预览更改
+- 系统设置管理
+  - 应用程序主题切换
+  - 系统信息查看
 
-### 📄 文本工具
-- 文本大小写转换（大写、小写、首字母大写）
-- 去除多余空格和空行
-- 文本统计（字符数、单词数、行数）
-- 实时统计显示
+### 规划中的功能
 
-### 🔢 计算器 *(规划中)*
-- 基础数学运算
-- 科学计算
-- 单位转换
-- 进制转换
-
-### 🎨 颜色工具 *(规划中)*
-- 颜色选择器
-- RGB/HEX 格式转换
-- 调色板生成
-- 颜色对比度检查
-
-### 🌐 网络工具 *(规划中)*
-- URL 编码/解码
-- IP 地址查询
-- 端口状态检查
-- 网络延迟测试
-
-### 📊 数据工具 *(规划中)*
-- JSON 格式化和验证
-- Base64 编码/解码
-- MD5/SHA 哈希计算
-- 时间戳转换
-
-### ⚙️ 系统信息 *(规划中)*
-- CPU 和内存信息
-- 磁盘使用情况
-- 网络接口信息
-- 环境变量查看
+- 文本处理工具
+- 图像处理工具
+- 计算器工具
+- 密码生成器
+- 网络工具
 
 ## 技术栈
 
-- **.NET 8** - 运行时框架
-- **Avalonia UI 11.3+** - 跨平台 UI 框架
-- **CommunityToolkit.Mvvm** - MVVM 框架支持
-- **C#** - 主要开发语言
+- .NET 8
+- Avalonia UI 11.3+
+- CommunityToolkit.Mvvm 8.2+
+- ReactiveUI (通过 Avalonia)
+
+## 代码结构
+
+```
+SmartToolbox/
+├── Models/                 # 数据模型
+│   └── FileFilterConfig.cs # 文件过滤配置
+├── ViewModels/             # 视图模型 (MVVM模式)
+│   ├── MainWindowViewModel.cs
+│   ├── SystemSettingsViewModel.cs
+│   └── ViewModelBase.cs
+├── Views/                  # 视图 (XAML和代码隐藏)
+│   ├── FileMoverView.axaml
+│   ├── MainWindow.axaml
+│   └── SystemSettingsView.axaml
+├── App.axaml               # 应用程序入口XAML
+├── Program.cs              # 程序入口点
+└── ViewLocator.cs          # 视图定位器
+```
+
+## 性能优化
+
+- 使用`async/await`模式避免UI线程阻塞
+- 实现高效的文件操作算法
+- 使用数据绑定减少手动UI更新
+- 合理使用内存管理和资源释放
 
 ## 快速开始
 
@@ -158,8 +160,34 @@ public partial class YourToolView : UserControl
 
 欢迎提交 Issue 和 Pull Request 来改进这个项目！
 
+## Windows MSI 安装包编译
+
+项目支持编译为 Windows MSI 安装包，便于在 Windows 系统上分发和安装。
+
+### 编译步骤
+
+1. **构建发布包**：
+   ```powershell
+   .\build-packages.ps1 -Version "1.0.0"
+   ```
+
+2. **创建 MSI 安装包**：
+   ```powershell
+   .\create-msi.ps1 -Version "1.0.0" -Platform "win-x64"
+   ```
+
+3. **查找生成的 MSI 文件**：
+   ```
+   publish\SmartToolbox-1.0.0-win-x64.msi
+   ```
+
+### 详细说明
+
+有关如何编译 Windows MSI 安装包的完整说明，请参阅 [WINDOWS_MSI_BUILD.md](WINDOWS_MSI_BUILD.md) 文档。
+
 ## 联系方式
 
-如果您有任何问题或建议，请创建 Issue 或通过以下方式联系我：
+如有任何问题或建议，请通过以下方式联系我们：
 
-- GitHub Issues: [项目地址]/issues 
+- 邮箱：your-email@company.com
+- GitHub：[Your Repository](https://github.com/your-repo)
