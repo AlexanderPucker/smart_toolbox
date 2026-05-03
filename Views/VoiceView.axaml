@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.VoiceView"
+             x:DataType="vm:VoiceViewModel">
+
+    <Grid ColumnDefinitions="250,*">
+        <Border Background="#2D2D2D" Padding="10">
+            <StackPanel Spacing="10">
+                <TextBlock Text="🎙️ 语音交互" FontSize="18" FontWeight="Bold"/>
+                
+                <TextBlock Text="服务提供商" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <DropDown SelectedItem="{Binding SelectedProvider}" HorizontalAlignment="Stretch">
+                    <DropDown.Items>
+                        <vm:VoiceProvider>OpenAI</vm:VoiceProvider>
+                        <vm:VoiceProvider>Azure</vm:VoiceProvider>
+                        <vm:VoiceProvider>ElevenLabs</vm:VoiceProvider>
+                        <vm:VoiceProvider>System</vm:VoiceProvider>
+                    </DropDown.Items>
+                </DropDown>
+
+                <TextBlock Text="语音" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <DropDown ItemsSource="{Binding AvailableVoices}" 
+                          SelectedItem="{Binding SelectedVoice}"
+                          HorizontalAlignment="Stretch"/>
+
+                <TextBlock Text="语速" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <Slider Value="{Binding Speed}" Minimum="0.5" Maximum="2.0"/>
+                <TextBlock Text="{Binding Speed, StringFormat={}{0:F1}x}" Foreground="Gray"/>
+
+                <TextBlock Text="音调" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <Slider Value="{Binding Pitch}" Minimum="0.5" Maximum="2.0"/>
+
+                <TextBlock Text="历史记录" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <ListBox ItemsSource="{Binding History}" Height="100">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Type}" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="{Binding Content}" MaxHeight="30" TextTrimming="CharacterEllipsis" FontSize="11"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Button Content="清空历史" Command="{Binding ClearHistoryCommand}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="*,*" Margin="10">
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="语音输入" FontWeight="SemiBold" FontSize="16"/>
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="20">
+                        <Button Content="🎤 开始录音" 
+                                Command="{Binding StartRecordingCommand}"
+                                IsVisible="{Binding !IsRecording}"
+                                HorizontalAlignment="Center"
+                                FontSize="18"
+                                Padding="30,15"/>
+                        <Button Content="⏹️ 停止录音" 
+                                Command="{Binding StopRecordingCommand}"
+                                IsVisible="{Binding IsRecording}"
+                                HorizontalAlignment="Center"
+                                FontSize="18"
+                                Padding="30,15"
+                                Classes="Danger"/>
+                        <TextBox Text="{Binding TranscribedText}" 
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Watermark="转录结果将显示在这里..."
+                                 MinHeight="100"/>
+                        <Button Content="使用转录文本" 
+                                Command="{Binding UseTranscribedTextCommand}"
+                                HorizontalAlignment="Center"
+                                IsEnabled="{Binding TranscribedContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="#2D2D2D" CornerRadius="8" Padding="15" Margin="0,10,0,0">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="语音合成" FontWeight="SemiBold" FontSize="16"/>
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="20">
+                        <TextBox Text="{Binding TextInput}" 
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Watermark="输入要朗读的文本..."
+                                 MinHeight="100"/>
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                            <Button Content="🔊 朗读" 
+                                    Command="{Binding SpeakCommand}"
+                                    IsEnabled="{Binding !IsSpeaking}"
+                                    FontSize="16"
+                                    Padding="30,10"/>
+                            <Button Content="⏹️ 停止" 
+                                    Command="{Binding StopSpeakingCommand}"
+                                    IsVisible="{Binding IsSpeaking}"
+                                    FontSize="16"
+                                    Classes="Danger"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

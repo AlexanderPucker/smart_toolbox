@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.ClipboardView"
+             x:DataType="vm:ClipboardViewModel">
+
+    <Grid ColumnDefinitions="250,*">
+        <Border Background="#2D2D2D" Padding="10">
+            <StackPanel Spacing="10">
+                <TextBlock Text="📋 智能剪贴板" FontSize="18" FontWeight="Bold"/>
+                
+                <ToggleSwitch Content="监控剪贴板" IsChecked="{Binding IsMonitoring}" Command="{Binding ToggleMonitoringCommand}"/>
+                <ToggleSwitch Content="自动处理" IsChecked="{Binding AutoProcess}"/>
+
+                <TextBlock Text="统计" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <ItemsControl ItemsSource="{Binding Stats}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                                <TextBlock Text="{Binding Label}" Foreground="Gray"/>
+                                <TextBlock Text="{Binding Value}" Grid.Column="1"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="筛选" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <StackPanel Spacing="5">
+                    <Button Content="全部" Command="{Binding FilterByTypeCommand}" CommandParameter="{x:Null}"/>
+                    <Button Content="文本" Command="{Binding FilterByTypeCommand}" CommandParameter="Text"/>
+                    <Button Content="代码" Command="{Binding FilterByTypeCommand}" CommandParameter="Code"/>
+                    <Button Content="JSON" Command="{Binding FilterByTypeCommand}" CommandParameter="Json"/>
+                    <Button Content="URL" Command="{Binding FilterByTypeCommand}" CommandParameter="Url"/>
+                </StackPanel>
+
+                <Button Content="清空历史" Command="{Binding ClearHistoryCommand}" Classes="Danger" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" Margin="10">
+            <Border Background="#2D2D2D" Padding="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Text="{Binding SearchQuery}" Watermark="搜索历史..." KeyDown="OnSearchKeyDown"/>
+                    <Button Content="搜索" Command="{Binding SearchCommand}" Grid.Column="1" Margin="5,0,0,0"/>
+                </Grid>
+            </Border>
+
+            <ListBox Grid.Row="1" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedItem}" Margin="0,10,0,0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="5">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Text="{Binding Type}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding CopiedAt, StringFormat={}{0:HH:mm:ss}}" Foreground="Gray" Grid.Column="1"/>
+                            </Grid>
+                            <TextBlock Text="{Binding Preview}" MaxHeight="40" TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="⭐" Foreground="Gold" IsVisible="{Binding IsFavorite}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Border Grid.Row="2" Background="#2D2D2D" Padding="10" Margin="0,10,0,0">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <TextBlock Text="{Binding StatusMessage}"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="5" Margin="0,10,0,0">
+                        <Button Content="复制" Command="{Binding CopyToClipboardCommand}"/>
+                        <Button Content="收藏" Command="{Binding ToggleFavoriteCommand}"/>
+                        <Button Content="删除" Command="{Binding DeleteItemCommand}" Classes="Danger"/>
+                    </StackPanel>
+                    <TextBox Text="{Binding SelectedItem.ProcessedContent}" 
+                             Grid.Row="2"
+                             AcceptsReturn="True"
+                             IsReadOnly="True"
+                             Watermark="处理结果..."
+                             Margin="0,10,0,0"
+                             IsVisible="{Binding SelectedItem.ProcessedContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

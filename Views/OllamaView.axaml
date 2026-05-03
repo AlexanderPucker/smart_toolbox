@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.OllamaView"
+             x:DataType="vm:OllamaViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+        <Border Background="#2D2D2D" Padding="15">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="🦙 Ollama 本地模型" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="Gray"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="1">
+                    <TextBox Text="{Binding BaseUrl}" Watermark="Ollama 地址" Width="200"/>
+                    <Button Content="连接" Command="{Binding ConnectCommand}"/>
+                    <Button Content="刷新" Command="{Binding RefreshModelsCommand}" IsEnabled="{Binding IsConnected}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="10">
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <Grid RowDefinitions="Auto,*">
+                    <TextBlock Text="已安装模型" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <ListBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}" Grid.Row="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="{Binding Size}" FontSize="12" Foreground="Gray"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="12" Foreground="Gray"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="#2D2D2D" CornerRadius="8" Padding="15" Margin="10,0,0,0">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <TextBlock Text="下载新模型" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <StackPanel Grid.Row="1" Spacing="10">
+                        <TextBox Text="{Binding NewModelName}" Watermark="模型名称，如 llama3.2:latest"/>
+                        <TextBlock Text="推荐模型:" Foreground="Gray"/>
+                        <ItemsControl ItemsSource="{Binding RecommendedModels}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding}" Command="{Binding $parent[ItemsControl].((vm:OllamaViewModel)DataContext).SelectRecommendedModelCommand}" 
+                                            CommandParameter="{Binding}" Margin="0,2,0,0" HorizontalAlignment="Left"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding PullProgress}" Foreground="#4A9EFF" IsVisible="{Binding IsPulling}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5" Margin="0,10,0,0">
+                        <Button Content="下载模型" Command="{Binding PullModelCommand}" IsEnabled="{Binding IsConnected}"/>
+                        <Button Content="删除模型" Command="{Binding DeleteModelCommand}" Classes="Danger"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

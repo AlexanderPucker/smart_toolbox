@@ -72,6 +72,12 @@ public sealed class ServiceLocator
         RegisterSingleton(WorkflowEngine.Instance);
         RegisterSingleton(KnowledgeBaseService.Instance);
         RegisterSingleton(UsageStatisticsService.Instance);
+        RegisterSingleton(OllamaService.Instance);
+        RegisterSingleton(HotkeyService.Instance);
+        RegisterSingleton(DataExportService.Instance);
+        RegisterSingleton(AgentService.Instance);
+        RegisterSingleton(SmartClipboardService.Instance);
+        RegisterSingleton(VoiceService.Instance);
     }
 
     public void Reset()
