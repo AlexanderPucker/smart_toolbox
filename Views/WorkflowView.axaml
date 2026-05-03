@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.WorkflowView"
+             x:DataType="vm:WorkflowViewModel">
+
+    <Grid ColumnDefinitions="250,*">
+        <Border Background="#2D2D2D" Padding="10">
+            <StackPanel Spacing="10">
+                <TextBlock Text="⚡ 工作流" FontSize="18" FontWeight="Bold"/>
+                
+                <TextBlock Text="可用工作流" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <ListBox ItemsSource="{Binding Workflows}" 
+                         SelectedItem="{Binding SelectedWorkflow}"
+                         Height="200">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="Gray"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Button Content="创建工作流" Command="{Binding CreateWorkflowCommand}" HorizontalAlignment="Stretch"/>
+
+                <TextBlock Text="工作流节点" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <ItemsControl ItemsSource="{Binding Nodes}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#3D3D3D" CornerRadius="4" Padding="8" Margin="0,2,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontSize="12"/>
+                                    <TextBlock Text="{Binding Type}" FontSize="10" Foreground="Gray"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+            <Border Background="#2D2D2D" Padding="15" Margin="10,0,10,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                        <TextBlock Text="{Binding SelectedWorkflow.Name}" FontSize="16" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding SelectedWorkflow.Description}" Foreground="Gray"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="1">
+                        <Button Content="运行" Command="{Binding RunWorkflowCommand}" IsEnabled="{Binding !IsRunning}"/>
+                        <Button Content="停止" Command="{Binding StopWorkflowCommand}" IsEnabled="{Binding IsRunning}"/>
+                        <Button Content="清空结果" Command="{Binding ClearResultsCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="10" RowDefinitions="*,*">
+                <Border Background="#2D2D2D" CornerRadius="8" Padding="10">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Text="输入" FontWeight="SemiBold"/>
+                        <TextBox Text="{Binding InputText}" 
+                                 Grid.Row="1"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Watermark="输入工作流所需的数据..."/>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Background="#2D2D2D" CornerRadius="8" Padding="10" Margin="0,10,0,0">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Text="输出" FontWeight="SemiBold"/>
+                        <TextBox Text="{Binding OutputText}" 
+                                 Grid.Row="1"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 IsReadOnly="True"
+                                 Watermark="工作流输出将显示在这里..."/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="2" Background="#1E1E1E" Padding="10" Margin="10,0,10,10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="{Binding StatusMessage}"/>
+                        <ProgressBar Value="{Binding Progress}" Maximum="100" Width="100" IsVisible="{Binding IsRunning}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding CurrentNode}" Foreground="Gray" Grid.Column="1"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

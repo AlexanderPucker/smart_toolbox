@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
@@ -7,7 +7,7 @@ namespace SmartToolbox.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private string _title = "个人工具箱";
+    private string _title = "Smart Toolbox";
 
     [ObservableProperty]
     private string _selectedToolName = "欢迎使用";
@@ -15,46 +15,69 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private object? _currentContent;
 
-    public ObservableCollection<ToolItem> Tools { get; } = new();
+    public ObservableCollection<ToolCategory> Categories { get; } = new();
 
     public MainWindowViewModel()
     {
         InitializeTools();
-        // 默认选择第一个工具
-        if (Tools.Count > 0)
+        if (Categories.Count > 0 && Categories[0].Tools.Count > 0)
         {
-            SelectTool(Tools[0]);
+            SelectTool(Categories[0].Tools[0]);
         }
     }
 
     private void InitializeTools()
     {
-        Tools.Add(new ToolItem("📁", "文件移动工具", "文件移动、批量操作等"));
-        Tools.Add(new ToolItem("📋", "JSON格式化", "JSON格式化、压缩、校验"));
-        Tools.Add(new ToolItem("🔐", "哈希计算器", "MD5、SHA1、SHA256、SHA512"));
-        Tools.Add(new ToolItem("🔄", "Base64编解码", "Base64编码、解码、URL安全"));
-        Tools.Add(new ToolItem("⏱️", "时间戳转换", "Unix时间戳与日期互转"));
-        Tools.Add(new ToolItem("🆔", "UUID生成器", "批量生成UUID/GUID"));
-        Tools.Add(new ToolItem("🔢", "计算器", "数学计算、单位转换"));
-        Tools.Add(new ToolItem("🎨", "颜色工具", "颜色选择、格式转换"));
-        Tools.Add(new ToolItem("🌐", "网络工具", "URL编码、IP查询等"));
-        Tools.Add(new ToolItem("⚙️", "系统信息", "系统信息查看"));
-        Tools.Add(new ToolItem("🤖", "AI文本摘要", "自动提取文本核心内容"));
-        Tools.Add(new ToolItem("🌍", "AI翻译助手", "多语言智能翻译"));
-        Tools.Add(new ToolItem("📝", "Prompt模板", "管理和使用Prompt模板"));
-        Tools.Add(new ToolItem("💻", "AI代码解释", "解释代码功能和逻辑"));
-        Tools.Add(new ToolItem("✨", "AI文本润色", "改善文本质量和表达"));
-        Tools.Add(new ToolItem("💬", "AI问答助手", "智能对话问答系统"));
-        Tools.Add(new ToolItem("🔍", "AI正则表达式", "用自然语言生成正则表达式"));
-        Tools.Add(new ToolItem("🔧", "AI设置", "配置AI API和参数"));
+        var aiCategory = new ToolCategory("🤖 AI 工具", new()
+        {
+            new ToolItem("💬", "AI 对话", "智能对话问答系统，支持流式输出"),
+            new ToolItem("🌍", "AI 翻译", "多语言智能翻译"),
+            new ToolItem("📝", "AI 摘要", "自动提取文本核心内容"),
+            new ToolItem("✨", "AI 润色", "改善文本质量和表达"),
+            new ToolItem("💻", "代码解释", "解释代码功能和逻辑"),
+            new ToolItem("🔍", "正则生成", "用自然语言生成正则表达式"),
+            new ToolItem("🎯", "Prompt优化", "分析和优化提示词"),
+            new ToolItem("📚", "知识库", "RAG文档问答系统"),
+            new ToolItem("⚡", "工作流", "AI工作流自动化"),
+            new ToolItem("🔧", "AI 设置", "配置AI API和参数"),
+        });
+
+        var devCategory = new ToolCategory("🔧 开发工具", new()
+        {
+            new ToolItem("📋", "JSON格式化", "JSON格式化、压缩、校验"),
+            new ToolItem("🔐", "哈希计算", "MD5、SHA1、SHA256、SHA512"),
+            new ToolItem("🔄", "Base64", "Base64编码、解码"),
+            new ToolItem("⏱️", "时间戳", "Unix时间戳与日期互转"),
+            new ToolItem("🆔", "UUID", "批量生成UUID/GUID"),
+            new ToolItem("🏃", "代码沙盒", "在线运行代码"),
+        });
+
+        var fileCategory = new ToolCategory("📁 文件工具", new()
+        {
+            new ToolItem("📂", "文件移动", "文件移动、批量操作"),
+        });
+
+        var statsCategory = new ToolCategory("📊 统计分析", new()
+        {
+            new ToolItem("💰", "用量统计", "Token使用量和费用统计"),
+        });
+
+        var promptCategory = new ToolCategory("📝 Prompt管理", new()
+        {
+            new ToolItem("📋", "Prompt模板", "管理和使用Prompt模板"),
+        });
+
+        Categories.Add(aiCategory);
+        Categories.Add(devCategory);
+        Categories.Add(fileCategory);
+        Categories.Add(statsCategory);
+        Categories.Add(promptCategory);
     }
 
     [RelayCommand]
     private void SelectTool(ToolItem tool)
     {
         SelectedToolName = tool.Name;
-        
-        // 这里可以根据工具类型创建对应的内容视图
         CurrentContent = CreateToolContent(tool.Name);
     }
 
@@ -62,26 +85,39 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         return toolName switch
         {
-            "文件移动工具" => new SmartToolbox.Views.FileMoverView(),
+            "AI 对话" => new SmartToolbox.Views.AIChatView(),
+            "AI 翻译" => new SmartToolbox.Views.AITranslatorView(),
+            "AI 摘要" => new SmartToolbox.Views.AISummaryView(),
+            "AI 润色" => new SmartToolbox.Views.AITextPolishView(),
+            "代码解释" => new SmartToolbox.Views.AICodeExplainView(),
+            "正则生成" => new SmartToolbox.Views.AIRegexGeneratorView(),
+            "Prompt优化" => new SmartToolbox.Views.PromptOptimizerView(),
+            "知识库" => new SmartToolbox.Views.KnowledgeBaseView(),
+            "工作流" => new SmartToolbox.Views.WorkflowView(),
+            "AI 设置" => new SmartToolbox.Views.AISettingsView(),
             "JSON格式化" => new SmartToolbox.Views.JsonFormatterView(),
-            "哈希计算器" => new SmartToolbox.Views.HashCalculatorView(),
-            "Base64编解码" => new SmartToolbox.Views.Base64View(),
-            "时间戳转换" => new SmartToolbox.Views.TimestampView(),
-            "UUID生成器" => new SmartToolbox.Views.UuidGeneratorView(),
-            "计算器" => "这里是计算器的内容区域\n\n• 基础数学运算\n• 科学计算\n• 单位转换\n• 进制转换",
-            "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
-            "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",
-            "系统信息" => "这里是系统信息的内容区域\n\n• CPU 信息\n• 内存使用情况\n• 磁盘空间\n• 网络接口",
-            "AI文本摘要" => new SmartToolbox.Views.AISummaryView(),
-            "AI翻译助手" => new SmartToolbox.Views.AITranslatorView(),
+            "哈希计算" => new SmartToolbox.Views.HashCalculatorView(),
+            "Base64" => new SmartToolbox.Views.Base64View(),
+            "时间戳" => new SmartToolbox.Views.TimestampView(),
+            "UUID" => new SmartToolbox.Views.UuidGeneratorView(),
+            "代码沙盒" => new SmartToolbox.Views.CodeSandboxView(),
+            "文件移动" => new SmartToolbox.Views.FileMoverView(),
+            "用量统计" => new SmartToolbox.Views.UsageStatsView(),
             "Prompt模板" => new SmartToolbox.Views.PromptTemplateView(),
-            "AI代码解释" => new SmartToolbox.Views.AICodeExplainView(),
-            "AI文本润色" => new SmartToolbox.Views.AITextPolishView(),
-            "AI问答助手" => new SmartToolbox.Views.AIChatView(),
-            "AI正则表达式" => new SmartToolbox.Views.AIRegexGeneratorView(),
-            "AI设置" => new SmartToolbox.Views.AISettingsView(),
-            _ => "欢迎使用个人工具箱！\n\n请从左侧选择需要使用的工具。\n\n这个工具箱包含了日常开发和办公中常用的实用工具。"
+            _ => "欢迎使用 Smart Toolbox！\n\n请从左侧选择需要使用的工具。"
         };
+    }
+}
+
+public class ToolCategory
+{
+    public string Name { get; set; }
+    public ObservableCollection<ToolItem> Tools { get; set; }
+
+    public ToolCategory(string name, ObservableCollection<ToolItem> tools)
+    {
+        Name = name;
+        Tools = tools;
     }
 }
 

@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.KnowledgeBaseView"
+             x:DataType="vm:KnowledgeBaseViewModel">
+
+    <Grid ColumnDefinitions="300,*">
+        <Border Background="#2D2D2D" Padding="10">
+            <StackPanel Spacing="10">
+                <TextBlock Text="📚 知识库" FontSize="18" FontWeight="Bold"/>
+                
+                <TextBlock Text="文档列表" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <ListBox ItemsSource="{Binding Documents}" 
+                         SelectedItem="{Binding SelectedDocument}"
+                         Height="200">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ChunkCount, StringFormat={}{0} 个片段}" FontSize="12" Foreground="Gray"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Button Content="添加文档" Command="{Binding AddDocumentCommand}"/>
+                    <Button Content="删除" Command="{Binding RemoveDocumentCommand}" IsEnabled="{Binding SelectedDocument, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                </StackPanel>
+
+                <TextBlock Text="统计" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <Grid ColumnDefinitions="*,*">
+                    <StackPanel>
+                        <TextBlock Text="文档数" Foreground="Gray" FontSize="12"/>
+                        <TextBlock Text="{Binding DocumentCount}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="总Token" Foreground="Gray" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalTokens}"/>
+                    </StackPanel>
+                </Grid>
+
+                <Button Content="清空知识库" Command="{Binding ClearAllCommand}" HorizontalAlignment="Stretch" Classes="Danger"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+            <Border Background="#2D2D2D" Padding="15" Margin="10,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="搜索知识库" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,5,0,0">
+                        <TextBox Text="{Binding SearchQuery}" Watermark="输入搜索关键词..."/>
+                        <Button Content="搜索" Command="{Binding SearchCommand}" Grid.Column="1" Margin="5,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <TabControl Grid.Row="1" Margin="10">
+                <TabItem Header="问答">
+                    <Grid RowDefinitions="*,Auto">
+                        <TextBox Text="{Binding AnswerOutput}" 
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 IsReadOnly="True"
+                                 Watermark="回答将显示在这里..."/>
+                        <Border Grid.Row="1" Background="#2D2D2D" Padding="10" Margin="0,10,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Text="{Binding QuestionInput}" Watermark="输入你的问题..."/>
+                                <Button Content="提问" Command="{Binding AskQuestionCommand}" Grid.Column="1" Margin="5,0,0,0"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="搜索结果">
+                    <ListBox ItemsSource="{Binding SearchResults}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="{Binding DocumentTitle}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap" MaxHeight="100"/>
+                                    <TextBlock Text="{Binding Similarity, StringFormat=相似度: {0:F2}}" FontSize="12" Foreground="Gray"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </TabItem>
+            </TabControl>
+
+            <Border Grid.Row="2" Background="#1E1E1E" Padding="10" Margin="10,0,10,10">
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.PromptOptimizerView"
+             x:DataType="vm:PromptOptimizerViewModel">
+
+    <Grid ColumnDefinitions="*,*">
+        <Border Background="#2D2D2D" Padding="15" Margin="10">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <TextBlock Text="原始提示词" FontWeight="SemiBold"/>
+                <TextBox Text="{Binding OriginalPrompt}" 
+                         Grid.Row="1"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Watermark="输入你的提示词..."/>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5" Margin="0,10,0,0">
+                    <Button Content="分析" Command="{Binding AnalyzePromptCommand}"/>
+                    <Button Content="优化" Command="{Binding OptimizePromptCommand}"/>
+                    <Button Content="生成变体" Command="{Binding GenerateVariantsCommand}"/>
+                    <Button Content="A/B测试" Command="{Binding RunABTestCommand}"/>
+                    <Button Content="清空" Command="{Binding ClearCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="10">
+            <TabControl>
+                <TabItem Header="优化结果">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+                            <TextBlock Text="优化类型:" VerticalAlignment="Center"/>
+                            <DropDown ItemsSource="{Binding OptimizationTypes}" 
+                                      SelectedItem="{Binding SelectedOptimizationType}"
+                                      Width="150"/>
+                            <Button Content="添加思维链" Command="{Binding EnhanceWithChainOfThoughtCommand}"/>
+                            <Button Content="应用优化" Command="{Binding UseOptimizedPromptCommand}"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding OptimizedPrompt}" 
+                                 Grid.Row="1"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 IsReadOnly="True"
+                                 Watermark="优化后的提示词将显示在这里..."/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="分析报告">
+                    <TextBox Text="{Binding AnalysisOutput}" 
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             IsReadOnly="True"/>
+                </TabItem>
+                <TabItem Header="变体列表">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="评分:" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding OverallScore, StringFormat=综合: {0:F0}%}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ClarityScore, StringFormat=清晰度: {0:F0}%}" VerticalAlignment="Center" Foreground="Gray"/>
+                            <TextBlock Text="{Binding SpecificityScore, StringFormat=具体性: {0:F0}%}" VerticalAlignment="Center" Foreground="Gray"/>
+                            <TextBlock Text="{Binding StructureScore, StringFormat=结构: {0:F0}%}" VerticalAlignment="Center" Foreground="Gray"/>
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding Variants}" 
+                                 Grid.Row="1"
+                                 SelectedItem="{Binding SelectedVariant}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Description}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Prompt}" MaxHeight="60" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="建议">
+                    <ScrollViewer>
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="发现的问题" FontWeight="SemiBold"/>
+                            <ItemsControl ItemsSource="{Binding Issues}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#3D3D3D" CornerRadius="4" Padding="8" Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="改进建议" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                            <ItemsControl ItemsSource="{Binding Suggestions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#3D3D3D" CornerRadius="4" Padding="8" Margin="0,2,0,0">
+                                            <TextBlock Text="{Binding}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+
+            <Border Grid.Row="1" Background="#1E1E1E" Padding="10" Margin="0,10,0,0">
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

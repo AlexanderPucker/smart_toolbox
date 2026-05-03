@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SmartToolbox.Views.UsageStatsView"
+             x:DataType="vm:UsageStatsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="15">
+            <TextBlock Text="💰 用量统计" FontSize="24" FontWeight="Bold"/>
+
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="今日统计" FontSize="16" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,*,*">
+                        <StackPanel>
+                            <TextBlock Text="请求数" Foreground="Gray"/>
+                            <TextBlock Text="{Binding TodayRequests}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Token数" Foreground="Gray"/>
+                            <TextBlock Text="{Binding TodayTokens}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="费用" Foreground="Gray"/>
+                            <TextBlock Text="{Binding TodayCost, StringFormat=${0:F4}}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="本月统计" FontSize="16" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,*,*">
+                        <StackPanel>
+                            <TextBlock Text="请求数" Foreground="Gray"/>
+                            <TextBlock Text="{Binding MonthRequests}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Token数" Foreground="Gray"/>
+                            <TextBlock Text="{Binding MonthTokens}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="费用" Foreground="Gray"/>
+                            <TextBlock Text="{Binding MonthCost, StringFormat=${0:F4}}" FontSize="20" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="预算管理" FontSize="16" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <StackPanel>
+                            <TextBlock Text="每日预算" Foreground="Gray"/>
+                            <TextBlock Text="{Binding DailyBudget, StringFormat=${0:F2}}"/>
+                            <ProgressBar Value="{Binding DailyBudgetUsagePercent}" Maximum="100" Margin="0,5,0,0"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="每月预算" Foreground="Gray"/>
+                            <TextBlock Text="{Binding MonthlyBudget, StringFormat=${0:F2}}"/>
+                            <ProgressBar Value="{Binding MonthlyBudgetUsagePercent}" Maximum="100" Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding BudgetStatus}" Margin="0,10,0,0"/>
+                    <TextBlock Text="{Binding ProjectionText}" Foreground="Gray"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="模型使用分布" FontSize="16" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding ModelUsages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#444" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,5,0,0">
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                                        <TextBlock Text="{Binding Model}"/>
+                                        <TextBlock Text="{Binding RequestCount, StringFormat={}{0} 次}" Grid.Column="1" Margin="10,0"/>
+                                        <TextBlock Text="{Binding TotalTokens, StringFormat={}{0} tokens}" Grid.Column="2" Margin="10,0"/>
+                                        <TextBlock Text="{Binding TotalCost, StringFormat=${0:F4}}" Grid.Column="3" Margin="10,0"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="15">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="最近请求" FontSize="16" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding RecentRequests}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,5,0,0">
+                                    <TextBlock Text="{Binding Time}" Foreground="Gray"/>
+                                    <TextBlock Text="{Binding Model}" Grid.Column="1" Margin="10,0"/>
+                                    <TextBlock Text="{Binding Tokens, StringFormat={}{0} tokens}" Grid.Column="2" Margin="10,0"/>
+                                    <TextBlock Text="{Binding Cost, StringFormat=${0:F4}}" Grid.Column="3"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="刷新" Command="{Binding RefreshCommand}"/>
+                <Button Content="清空历史" Command="{Binding ClearHistoryCommand}" Classes="Danger"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
