@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.AISummaryView"
+             x:DataType="vm:AISummaryViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto">
+        <StackPanel Grid.Row="0" Spacing="12">
+            <TextBlock Text="AI文本摘要" FontWeight="Bold" FontSize="20"/>
+            
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="摘要长度:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding SummaryLengths}"
+                          SelectedItem="{Binding SummaryLength}"
+                          Width="150"/>
+                <Button Classes="success" Command="{Binding GenerateSummaryCommand}">
+                    <TextBlock Text="生成摘要"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding ClearCommand}">
+                    <TextBlock Text="清空"/>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,16,*" Margin="0,16,0,0">
+            <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Text="输入文本" FontWeight="Medium" FontSize="14"/>
+                <TextBox Text="{Binding InputText}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         FontSize="14"
+                         Watermark="输入需要摘要的文本..."
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Text="摘要结果" FontWeight="Medium" FontSize="14"/>
+                <TextBox Text="{Binding OutputText}"
+                         TextWrapping="Wrap"
+                         FontSize="14"
+                         Watermark="摘要结果将显示在这里..."
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         IsReadOnly="True"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="3" Background="#F8F9FA" CornerRadius="5" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="13"/>
+        </Border>
+    </Grid>
+</UserControl>

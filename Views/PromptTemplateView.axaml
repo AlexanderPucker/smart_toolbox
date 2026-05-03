@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             xmlns:models="using:SmartToolbox.Models"
+             x:Class="SmartToolbox.Views.PromptTemplateView"
+             x:DataType="vm:PromptTemplateViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+        <Style Selector="Button.danger"><Setter Property="Background" Value="#DC3545"/></Style>
+        <Style Selector="Button.danger:pointerover"><Setter Property="Background" Value="#C82333"/></Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Row="0" Spacing="12">
+            <TextBlock Text="Prompt模板管理器" FontWeight="Bold" FontSize="20"/>
+            
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Command="{Binding NewTemplateCommand}">
+                    <TextBlock Text="新建模板"/>
+                </Button>
+                <Button Classes="success" Command="{Binding SaveTemplateCommand}">
+                    <TextBlock Text="保存"/>
+                </Button>
+                <Button Command="{Binding EditTemplateCommand}">
+                    <TextBlock Text="编辑"/>
+                </Button>
+                <Button Classes="danger" Command="{Binding DeleteTemplateCommand}">
+                    <TextBlock Text="删除"/>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="250,16,*" Margin="0,16,0,0">
+            <StackPanel Grid.Column="0" Spacing="12">
+                <TextBlock Text="模板列表" FontWeight="Medium" FontSize="14"/>
+                <ListBox ItemsSource="{Binding Templates}"
+                         SelectedItem="{Binding SelectedTemplate}"
+                         DisplayMemberBinding="{Binding Name}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Spacing="12">
+                <Grid ColumnDefinitions="Auto,8,*,8,Auto,8,*">
+                    <TextBlock Grid.Column="0" Text="名称:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="2" Text="{Binding TemplateName}" Watermark="模板名称"/>
+                    <TextBlock Grid.Column="4" Text="分类:" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Column="5" ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding TemplateCategory}"/>
+                </Grid>
+                
+                <TextBox Text="{Binding TemplateDescription}"
+                         Watermark="模板描述"
+                         Height="50"/>
+                
+                <TextBlock Text="模板内容（使用 {变量名} 作为占位符）" FontWeight="Medium"/>
+                <TextBox Text="{Binding TemplateContent}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         FontSize="14"
+                         Watermark="输入模板内容..."
+                         Height="300"/>
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="5" Padding="12,8" Margin="0,12,0,0">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding StatusMessage}" FontSize="13"/>
+                <TextBox Text="{Binding OutputText}"
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         Height="100"
+                         Watermark="模板执行结果..."/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.AIRegexGeneratorView"
+             x:DataType="vm:AIRegexGeneratorViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+    </UserControl.Styles>
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <StackPanel Grid.Row="0" Spacing="12">
+            <TextBlock Text="AI正则表达式生成器" FontWeight="Bold" FontSize="20"/>
+            
+            <StackPanel Spacing="8">
+                <TextBlock Text="描述你的需求:" FontWeight="Medium"/>
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding InputDescription}"
+                             Watermark="例如：匹配邮箱地址..."
+                             FontSize="14"/>
+                    <Button Grid.Column="1" Classes="success" Command="{Binding GenerateRegexCommand}"
+                            Margin="8,0,0,0">
+                        <TextBlock Text="生成"/>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Spacing="8" Margin="0,12,0,0">
+            <TextBlock Text="生成的正则表达式:" FontWeight="Medium"/>
+            <TextBox Text="{Binding OutputRegex}"
+                     FontFamily="Consolas, monospace"
+                     FontSize="14"
+                     Watermark="正则表达式将显示在这里..."
+                     IsReadOnly="True"
+                     Height="60"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="测试文本:" FontWeight="Medium"/>
+                <Button Command="{Binding TestRegexCommand}">
+                    <TextBlock Text="测试匹配"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding ClearCommand}">
+                    <TextBlock Text="清空"/>
+                </Button>
+            </StackPanel>
+            <TextBox Text="{Binding TestText}"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     FontSize="14"
+                     Watermark="输入测试文本..."
+                     Height="80"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Spacing="8" Margin="0,12,0,0">
+            <TextBlock Text="测试结果:" FontWeight="Medium"/>
+            <TextBox Text="{Binding TestResult}"
+                     TextWrapping="Wrap"
+                     FontSize="14"
+                     Watermark="测试结果将显示在这里..."
+                     IsReadOnly="True"
+                     Height="120"/>
+        </StackPanel>
+
+        <Border Grid.Row="4" Background="#F8F9FA" CornerRadius="5" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="13"/>
+        </Border>
+    </Grid>
+</UserControl>

@@ -39,6 +39,14 @@ public partial class MainWindowViewModel : ViewModelBase
         Tools.Add(new ToolItem("🎨", "颜色工具", "颜色选择、格式转换"));
         Tools.Add(new ToolItem("🌐", "网络工具", "URL编码、IP查询等"));
         Tools.Add(new ToolItem("⚙️", "系统信息", "系统信息查看"));
+        Tools.Add(new ToolItem("🤖", "AI文本摘要", "自动提取文本核心内容"));
+        Tools.Add(new ToolItem("🌍", "AI翻译助手", "多语言智能翻译"));
+        Tools.Add(new ToolItem("📝", "Prompt模板", "管理和使用Prompt模板"));
+        Tools.Add(new ToolItem("💻", "AI代码解释", "解释代码功能和逻辑"));
+        Tools.Add(new ToolItem("✨", "AI文本润色", "改善文本质量和表达"));
+        Tools.Add(new ToolItem("💬", "AI问答助手", "智能对话问答系统"));
+        Tools.Add(new ToolItem("🔍", "AI正则表达式", "用自然语言生成正则表达式"));
+        Tools.Add(new ToolItem("🔧", "AI设置", "配置AI API和参数"));
     }
 
     [RelayCommand]
@@ -64,6 +72,14 @@ public partial class MainWindowViewModel : ViewModelBase
             "颜色工具" => "这里是颜色工具的内容区域\n\n• 颜色选择器\n• RGB/HEX转换\n• 调色板\n• 颜色对比度检查",
             "网络工具" => "这里是网络工具的内容区域\n\n• URL 编码/解码\n• IP 地址查询\n• 端口扫描\n• 网络状态检查",
             "系统信息" => "这里是系统信息的内容区域\n\n• CPU 信息\n• 内存使用情况\n• 磁盘空间\n• 网络接口",
+            "AI文本摘要" => new SmartToolbox.Views.AISummaryView(),
+            "AI翻译助手" => new SmartToolbox.Views.AITranslatorView(),
+            "Prompt模板" => new SmartToolbox.Views.PromptTemplateView(),
+            "AI代码解释" => new SmartToolbox.Views.AICodeExplainView(),
+            "AI文本润色" => new SmartToolbox.Views.AITextPolishView(),
+            "AI问答助手" => new SmartToolbox.Views.AIChatView(),
+            "AI正则表达式" => new SmartToolbox.Views.AIRegexGeneratorView(),
+            "AI设置" => new SmartToolbox.Views.AISettingsView(),
             _ => "欢迎使用个人工具箱！\n\n请从左侧选择需要使用的工具。\n\n这个工具箱包含了日常开发和办公中常用的实用工具。"
         };
     }

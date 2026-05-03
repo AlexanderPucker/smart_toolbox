@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SmartToolbox.ViewModels"
+             x:Class="SmartToolbox.Views.AISettingsView"
+             x:DataType="vm:AISettingsViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#007ACC"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="14,8"/>
+        </Style>
+        <Style Selector="Button:pointerover"><Setter Property="Background" Value="#005A9B"/></Style>
+        <Style Selector="Button.secondary"><Setter Property="Background" Value="#6C757D"/></Style>
+        <Style Selector="Button.secondary:pointerover"><Setter Property="Background" Value="#5A6268"/></Style>
+        <Style Selector="Button.success"><Setter Property="Background" Value="#28A745"/></Style>
+        <Style Selector="Button.success:pointerover"><Setter Property="Background" Value="#218838"/></Style>
+        <Style Selector="TextBlock"><Setter Property="FontSize" Value="14"/></Style>
+        <Style Selector="TextBox"><Setter Property="FontSize" Value="14"/></Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+            <StackPanel Grid.Row="0" Spacing="20">
+                <TextBlock Text="AI API配置" FontWeight="Bold" FontSize="20"/>
+
+                <StackPanel Spacing="12">
+                    <TextBlock Text="选择AI提供商" FontWeight="Medium"/>
+                    <ComboBox ItemsSource="{Binding Providers}"
+                              SelectedItem="{Binding SelectedProvider}"
+                              HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <TextBlock Text="API密钥" FontWeight="Medium"/>
+                    <TextBox Text="{Binding ApiKey}"
+                             Watermark="请输入API密钥"
+                             HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <TextBlock Text="API地址" FontWeight="Medium"/>
+                    <TextBox Text="{Binding ApiUrl}"
+                             Watermark="API端点地址"
+                             HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <TextBlock Text="模型" FontWeight="Medium"/>
+                    <TextBox Text="{Binding Model}"
+                             Watermark="模型名称"
+                             HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Temperature" FontWeight="Medium"/>
+                        <TextBlock Text="{Binding Temperature}" Margin="10,0,0,0" Foreground="#666"/>
+                    </StackPanel>
+                    <Slider Minimum="0" Maximum="1" Value="{Binding Temperature}"
+                            TickFrequency="0.1" IsSnapToTickEnabled="True"/>
+                </StackPanel>
+
+                <StackPanel Spacing="12">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="最大Token数" FontWeight="Medium"/>
+                        <TextBlock Text="{Binding MaxTokens}" Margin="10,0,0,0" Foreground="#666"/>
+                    </StackPanel>
+                    <Slider Minimum="500" Maximum="8000" Value="{Binding MaxTokens}"
+                            TickFrequency="500" IsSnapToTickEnabled="True"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
+                <Button Classes="success" Command="{Binding SaveConfigCommand}">
+                    <TextBlock Text="保存配置"/>
+                </Button>
+                <Button Classes="secondary" Command="{Binding ResetConfigCommand}">
+                    <TextBlock Text="重置"/>
+                </Button>
+            </StackPanel>
+
+            <Border Grid.Row="2" Background="#E8F4FD" CornerRadius="6" Padding="16,12" Margin="0,20,0,0">
+                <TextBlock Text="{Binding StatusMessage}" FontSize="14"/>
+            </Border>
+
+            <Border Grid.Row="3" Background="#FFF3CD" CornerRadius="6" Padding="16,12" Margin="0,20,0,0">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="提示" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="OpenAI: 需要OpenAI API密钥" FontSize="13"/>
+                    <TextBlock Text="通义千问: 需要阿里云API密钥" FontSize="13"/>
+                    <TextBlock Text="自定义: 可配置任何兼容OpenAI API格式的服务" FontSize="13"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
