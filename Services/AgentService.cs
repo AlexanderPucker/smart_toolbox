@@ -309,7 +309,24 @@ public sealed class AgentService
 
 请输出执行结果。如果需要使用工具，请说明工具名称和参数。";
 
-            var response = await _aiService.SendMessageAsync(actionPrompt, "你是一个高效的任务执行者。", cancellationToken: cancellationToken);
+            var response = await _aiService.SendMessageWithToolLoopAsync(
+                new List<Message>
+                {
+                    new()
+                    {
+                        Role = "user",
+                        Content = actionPrompt
+                    }
+                },
+                _toolRegistry.GetAllToolDefinitions(),
+                async (toolName, arguments) =>
+                {
+                    var toolResult = await _toolRegistry.ExecuteToolAsync(toolName, arguments);
+                    task.ExecutionLog.Add($"[{DateTime.Now:HH:mm:ss}] 工具 {toolName} 执行完成");
+                    return toolResult;
+                },
+                "你是一个高效的任务执行者。",
+                cancellationToken: cancellationToken);
 
             if (response.IsSuccess)
             {

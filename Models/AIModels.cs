@@ -66,6 +66,7 @@ public class Message
     public string Role { get; set; } = "user";
     public string Content { get; set; } = string.Empty;
     public List<ImageContent>? Images { get; set; }
+    public List<ToolCall>? ToolCalls { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.Now;
     public int TokenCount { get; set; }
     public bool IsPinned { get; set; }
@@ -88,6 +89,26 @@ public class ChatCompletionRequest
     public int MaxTokens { get; set; } = 2000;
     public bool Stream { get; set; }
     public List<ToolDefinition>? Tools { get; set; }
+}
+
+public class EmbeddingRequest
+{
+    public string Model { get; set; } = string.Empty;
+    public List<string> Input { get; set; } = new();
+}
+
+public class EmbeddingResult
+{
+    public int Index { get; set; }
+    public float[] Vector { get; set; } = Array.Empty<float>();
+}
+
+public class EmbeddingResponse
+{
+    public bool IsSuccess { get; set; }
+    public string Model { get; set; } = string.Empty;
+    public List<EmbeddingResult> Embeddings { get; set; } = new();
+    public string? ErrorMessage { get; set; }
 }
 
 public class ToolDefinition
@@ -126,6 +147,7 @@ public class AIResponse
     public AIProvider Provider { get; set; }
     public double EstimatedCost { get; set; }
     public List<ToolCall>? ToolCalls { get; set; }
+    public List<Message>? ResponseMessages { get; set; }
     public bool IsToolCall => ToolCalls != null && ToolCalls.Count > 0;
     public TimeSpan Duration { get; set; }
     public bool IsSuccess { get; set; } = true;

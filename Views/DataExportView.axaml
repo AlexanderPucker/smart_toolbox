@@ -9,7 +9,7 @@
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Text="📤 数据导出" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                 <StackPanel Orientation="Horizontal" Spacing="5" Grid.Column="1">
-                    <Button Content="导出全部" Command="{Binding ExportAllCommand}"/>
+                    <Button Content="导出中..." IsEnabled="False" IsVisible="{Binding IsExporting}"/>
                     <Button Content="打开目录" Command="{Binding OpenDirectoryCommand}"/>
                 </StackPanel>
             </Grid>
@@ -21,22 +21,10 @@
                     <TextBlock Text="导出选项" FontWeight="SemiBold" FontSize="16"/>
                     
                     <TextBlock Text="导出格式"/>
-                    <DropDown SelectedItem="{Binding SelectedFormat}" HorizontalAlignment="Stretch">
-                        <DropDown.Items>
-                            <x:String>JSON</x:String>
-                            <x:String>Markdown</x:String>
-                            <x:String>HTML</x:String>
-                            <x:String>PlainText</x:String>
-                        </DropDown.Items>
-                    </DropDown>
+                    <DropDown ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding SelectedFormat}" HorizontalAlignment="Stretch"/>
 
                     <TextBlock Text="导出范围"/>
-                    <DropDown SelectedItem="{Binding SelectedScope}" HorizontalAlignment="Stretch">
-                        <DropDown.Items>
-                            <x:String>当前对话</x:String>
-                            <x:String>所有对话</x:String>
-                        </DropDown.Items>
-                    </DropDown>
+                    <DropDown ItemsSource="{Binding AvailableScopes}" SelectedItem="{Binding SelectedScope}" HorizontalAlignment="Stretch"/>
 
                     <CheckBox Content="包含元数据" IsChecked="{Binding IncludeMetadata}"/>
                     <CheckBox Content="包含时间戳" IsChecked="{Binding IncludeTimestamps}"/>
@@ -46,7 +34,7 @@
                     <CheckBox Content="匿名化处理" IsChecked="{Binding Anonymize}"/>
                     <CheckBox Content="压缩输出" IsChecked="{Binding CompressOutput}"/>
 
-                    <Button Content="开始导出" Command="{Binding ExportCommand}" HorizontalAlignment="Stretch"/>
+                    <Button Content="开始导出" Command="{Binding ExportCommand}" IsEnabled="{Binding !IsExporting}" HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Border>
 

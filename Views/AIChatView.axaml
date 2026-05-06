@@ -35,6 +35,8 @@
             <TextBox Text="{Binding SystemPrompt}"
                      Watermark="设置AI的角色和行为..."
                      HorizontalAlignment="Stretch"/>
+            <CheckBox Content="启用工具调用（启用后自动使用非流式模式）"
+                      IsChecked="{Binding EnableTools}"/>
         </StackPanel>
 
         <ListBox Grid.Row="2" ItemsSource="{Binding Messages}"
@@ -52,12 +54,16 @@
                                     <DataTrigger Binding="{Binding Role}" Value="assistant">
                                         <Setter Property="Background" Value="#F5F5F5"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding Role}" Value="tool">
+                                        <Setter Property="Background" Value="#FFF8E1"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
                         <StackPanel Spacing="4">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <TextBlock FontWeight="Bold" Text="{Binding Role, Converter={StaticResource RoleToNameConverter}}"/>
+                                <TextBlock Text="{Binding ToolName}" FontSize="11" Foreground="#888"/>
                                 <TextBlock Text="{Binding Timestamp}" FontSize="11" Foreground="#999"/>
                             </StackPanel>
                             <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>

@@ -356,7 +356,6 @@ public sealed class ConversationExportService
             ExportFormat.Markdown => ".md",
             ExportFormat.Html => ".html",
             ExportFormat.PlainText => ".txt",
-            ExportFormat.Pdf => ".pdf",
             _ => ".txt"
         };
     }

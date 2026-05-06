@@ -12,6 +12,7 @@ public class RoleToNameConverter : IValueConverter
         {
             "user" => "你",
             "assistant" => "AI",
+            "tool" => "工具",
             _ => value
         };
     }

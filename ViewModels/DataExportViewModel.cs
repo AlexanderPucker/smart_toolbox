@@ -11,6 +11,20 @@ namespace SmartToolbox.ViewModels;
 
 public partial class DataExportViewModel : ViewModelBase
 {
+    public ObservableCollection<string> AvailableFormats { get; } = new()
+    {
+        "JSON",
+        "Markdown",
+        "HTML",
+        "PlainText"
+    };
+
+    public ObservableCollection<string> AvailableScopes { get; } = new()
+    {
+        "当前对话",
+        "所有对话"
+    };
+
     [ObservableProperty]
     private string _selectedFormat = "Markdown";
 
@@ -128,27 +142,6 @@ public partial class DataExportViewModel : ViewModelBase
         };
 
         await _exportService.ExportAsync(options);
-    }
-
-    [RelayCommand]
-    private async Task ExportAllAsync()
-    {
-        IsExporting = true;
-        StatusMessage = "正在导出所有数据...";
-
-        var result = await _exportService.ExportAllDataAsync(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "smart_toolbox_backup.json"));
-
-        if (result.Success)
-        {
-            StatusMessage = "全部数据已导出到文档目录";
-        }
-        else
-        {
-            StatusMessage = $"导出失败: {result.ErrorMessage}";
-        }
-
-        IsExporting = false;
     }
 
     [RelayCommand]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -39,6 +40,7 @@ public partial class WorkflowViewModel : ViewModelBase
     public ObservableCollection<WorkflowResultItem> Results { get; } = new();
 
     private readonly WorkflowEngine _workflowEngine;
+    private CancellationTokenSource? _runCancellationTokenSource;
 
     public WorkflowViewModel()
     {
@@ -150,6 +152,8 @@ public partial class WorkflowViewModel : ViewModelBase
         Results.Clear();
         OutputText = string.Empty;
         StatusMessage = "正在运行工作流...";
+        _runCancellationTokenSource?.Dispose();
+        _runCancellationTokenSource = new CancellationTokenSource();
 
         try
         {
@@ -161,7 +165,10 @@ public partial class WorkflowViewModel : ViewModelBase
                 { "target_language", "英语" }
             };
 
-            var result = await _workflowEngine.RunWorkflowAsync(SelectedWorkflow.Id, inputs);
+            var result = await _workflowEngine.RunWorkflowAsync(
+                SelectedWorkflow.Id,
+                inputs,
+                _runCancellationTokenSource.Token);
 
             OutputText = result.FinalOutput;
             Progress = 100;
@@ -184,14 +191,21 @@ public partial class WorkflowViewModel : ViewModelBase
         {
             IsRunning = false;
             IsLoading = false;
+            _runCancellationTokenSource?.Dispose();
+            _runCancellationTokenSource = null;
         }
     }
 
     [RelayCommand]
     private void StopWorkflow()
     {
-        StatusMessage = "工作流已停止";
-        IsRunning = false;
+        if (!IsRunning)
+        {
+            return;
+        }
+
+        _runCancellationTokenSource?.Cancel();
+        StatusMessage = "正在停止工作流...";
     }
 
     [RelayCommand]

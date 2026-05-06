@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using SmartToolbox.Models;
 
@@ -66,6 +68,7 @@ public sealed class WorkflowEngine
     private readonly AIService _aiService;
     private readonly ToolRegistry _toolRegistry;
     private readonly TokenCounterService _tokenCounter;
+    private readonly string _workflowStorePath;
 
     public event Action<Workflow>? OnWorkflowCreated;
     public event Action<string, WorkflowRunResult>? OnWorkflowCompleted;
@@ -76,7 +79,13 @@ public sealed class WorkflowEngine
         _aiService = AIService.Instance;
         _toolRegistry = ToolRegistry.Instance;
         _tokenCounter = TokenCounterService.Instance;
+        _workflowStorePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "SmartToolbox",
+            "workflows.json");
+        LoadWorkflowsFromDisk();
         InitializeDefaultWorkflows();
+        SaveWorkflowsToDisk();
     }
 
     private void InitializeDefaultWorkflows()
@@ -117,7 +126,10 @@ public sealed class WorkflowEngine
             Dependencies = new List<string> { "explain", "review" }
         });
 
-        _workflows[codeReviewWorkflow.Id] = codeReviewWorkflow;
+        if (!_workflows.ContainsKey(codeReviewWorkflow.Id))
+        {
+            _workflows[codeReviewWorkflow.Id] = codeReviewWorkflow;
+        }
 
         var translationWorkflow = new Workflow
         {
@@ -145,7 +157,10 @@ public sealed class WorkflowEngine
             Dependencies = new List<string> { "translate" }
         });
 
-        _workflows[translationWorkflow.Id] = translationWorkflow;
+        if (!_workflows.ContainsKey(translationWorkflow.Id))
+        {
+            _workflows[translationWorkflow.Id] = translationWorkflow;
+        }
 
         var documentAnalysisWorkflow = new Workflow
         {
@@ -183,7 +198,10 @@ public sealed class WorkflowEngine
             Dependencies = new List<string> { "extract", "summarize" }
         });
 
-        _workflows[documentAnalysisWorkflow.Id] = documentAnalysisWorkflow;
+        if (!_workflows.ContainsKey(documentAnalysisWorkflow.Id))
+        {
+            _workflows[documentAnalysisWorkflow.Id] = documentAnalysisWorkflow;
+        }
     }
 
     public Workflow CreateWorkflow(string name, string description = "")
@@ -196,6 +214,7 @@ public sealed class WorkflowEngine
         };
 
         _workflows[workflow.Id] = workflow;
+        SaveWorkflowsToDisk();
         OnWorkflowCreated?.Invoke(workflow);
         return workflow;
     }
@@ -206,6 +225,7 @@ public sealed class WorkflowEngine
         {
             workflow.Nodes.Add(node);
             workflow.UpdatedAt = DateTime.Now;
+            SaveWorkflowsToDisk();
         }
     }
 
@@ -215,6 +235,7 @@ public sealed class WorkflowEngine
         {
             workflow.Nodes.RemoveAll(n => n.Id == nodeId);
             workflow.UpdatedAt = DateTime.Now;
+            SaveWorkflowsToDisk();
         }
     }
 
@@ -230,7 +251,10 @@ public sealed class WorkflowEngine
 
     public void DeleteWorkflow(string workflowId)
     {
-        _workflows.Remove(workflowId);
+        if (_workflows.Remove(workflowId))
+        {
+            SaveWorkflowsToDisk();
+        }
     }
 
     public async Task<WorkflowRunResult> RunWorkflowAsync(
@@ -245,6 +269,16 @@ public sealed class WorkflowEngine
                 WorkflowId = workflowId,
                 Success = false,
                 ErrorMessage = $"未找到工作流: {workflowId}"
+            };
+        }
+
+        if (!ValidateWorkflow(workflow, out var validationErrors))
+        {
+            return new WorkflowRunResult
+            {
+                WorkflowId = workflowId,
+                Success = false,
+                ErrorMessage = string.Join(Environment.NewLine, validationErrors)
             };
         }
 
@@ -289,7 +323,19 @@ public sealed class WorkflowEngine
         }
 
         result.TotalDuration = DateTime.Now - startTime;
-        result.Success = result.NodeResults.All(r => r.Success);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            result.Success = false;
+            result.ErrorMessage ??= "工作流被取消";
+        }
+        else if (!string.IsNullOrEmpty(result.ErrorMessage))
+        {
+            result.Success = false;
+        }
+        else
+        {
+            result.Success = result.NodeResults.All(r => r.Success);
+        }
         result.FinalOutput = nodeOutputs.Values.LastOrDefault() ?? string.Empty;
 
         OnWorkflowCompleted?.Invoke(workflowId, result);
@@ -311,6 +357,7 @@ public sealed class WorkflowEngine
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var prompt = ResolveTemplate(node.PromptTemplate ?? "", variables, nodeOutputs);
 
             if (node.Type == "tool" && !string.IsNullOrEmpty(node.ToolName))
@@ -334,6 +381,11 @@ public sealed class WorkflowEngine
                     result.Success = false;
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            result.Error = "工作流被取消";
+            result.Success = false;
         }
         catch (Exception ex)
         {
@@ -414,6 +466,7 @@ public sealed class WorkflowEngine
         };
 
         _workflows[workflow.Id] = workflow;
+        SaveWorkflowsToDisk();
         OnWorkflowCreated?.Invoke(workflow);
         return workflow;
     }
@@ -455,5 +508,50 @@ public sealed class WorkflowEngine
         }
 
         return errors.Count == 0;
+    }
+
+    private void LoadWorkflowsFromDisk()
+    {
+        try
+        {
+            if (!File.Exists(_workflowStorePath))
+            {
+                return;
+            }
+
+            var json = File.ReadAllText(_workflowStorePath);
+            var workflows = JsonSerializer.Deserialize<List<Workflow>>(json) ?? new List<Workflow>();
+            foreach (var workflow in workflows.Where(w => !string.IsNullOrWhiteSpace(w.Id)))
+            {
+                _workflows[workflow.Id] = workflow;
+            }
+        }
+        catch
+        {
+            // 读取失败时保留内存默认能力
+        }
+    }
+
+    private void SaveWorkflowsToDisk()
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(_workflowStorePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var data = _workflows.Values.ToList();
+            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            File.WriteAllText(_workflowStorePath, json);
+        }
+        catch
+        {
+            // 落盘失败不阻断主流程
+        }
     }
 }

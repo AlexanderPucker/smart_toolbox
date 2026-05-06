@@ -205,7 +205,9 @@ public partial class AIChatViewModel : ViewModelBase
             {
                 Timestamp = msg.Timestamp,
                 IsPinned = msg.IsPinned,
-                TokenCount = msg.TokenCount
+                TokenCount = msg.TokenCount,
+                ToolCallId = msg.ToolCallId,
+                ToolName = msg.ToolName
             });
         }
 
@@ -230,8 +232,10 @@ public partial class AIChatViewModel : ViewModelBase
         {
             messageList.Add(new Message
             {
-                Role = msg.Role == "user" ? "user" : "assistant",
-                Content = msg.Content
+                Role = msg.Role,
+                Content = msg.Content,
+                ToolCallId = msg.ToolCallId,
+                ToolName = msg.ToolName
             });
         }
 
@@ -244,7 +248,7 @@ public partial class AIChatViewModel : ViewModelBase
 
         try
         {
-            if (UseStreaming)
+            if (UseStreaming && !EnableTools)
             {
                 await SendStreamingAsync(messageList, assistantMessage);
             }
@@ -262,6 +266,14 @@ public partial class AIChatViewModel : ViewModelBase
         {
             assistantMessage.IsStreaming = false;
             IsStreaming = false;
+        }
+    }
+
+    partial void OnEnableToolsChanged(bool value)
+    {
+        if (value)
+        {
+            UseStreaming = false;
         }
     }
 
@@ -318,7 +330,20 @@ public partial class AIChatViewModel : ViewModelBase
 
     private async Task SendNormalAsync(List<Message> messageList, ChatMessage assistantMessage)
     {
-        var response = await _aiService.SendMessageAsync(messageList, SystemPrompt, SelectedModel);
+        AIResponse response;
+        if (EnableTools)
+        {
+            response = await _aiService.SendMessageWithToolLoopAsync(
+                messageList,
+                _toolRegistry.GetAllToolDefinitions(),
+                async (toolName, arguments) => await _toolRegistry.ExecuteToolAsync(toolName, arguments),
+                SystemPrompt,
+                SelectedModel);
+        }
+        else
+        {
+            response = await _aiService.SendMessageAsync(messageList, SystemPrompt, SelectedModel);
+        }
 
         if (response.IsSuccess)
         {
@@ -327,20 +352,11 @@ public partial class AIChatViewModel : ViewModelBase
 
             if (_selectedConversation != null)
             {
-                _conversationManager.AddMessage(_selectedConversation.Id, new Message
-                {
-                    Role = "user",
-                    Content = Messages[Messages.Count - 2].Content
-                });
-                _conversationManager.AddMessage(_selectedConversation.Id, new Message
-                {
-                    Role = "assistant",
-                    Content = response.Content,
-                    TokenCount = response.OutputTokens
-                });
+                PersistConversationMessages(_selectedConversation.Id, response, assistantMessage.Content);
             }
 
             StatusMessage = $"Token: {response.TotalTokens} | 费用: ${response.EstimatedCost:F4}";
+            AppendToolMessagesToUi(response);
         }
         else
         {
@@ -428,6 +444,60 @@ public partial class AIChatViewModel : ViewModelBase
             Value = $"{info.UsagePercentage:F1}%"
         });
     }
+
+    private void PersistConversationMessages(Guid conversationId, AIResponse response, string finalAssistantContent)
+    {
+        _conversationManager.AddMessage(conversationId, new Message
+        {
+            Role = "user",
+            Content = Messages[Messages.Count - 2].Content
+        });
+
+        if (response.ResponseMessages != null && response.ResponseMessages.Count > 1)
+        {
+            foreach (var message in response.ResponseMessages.Where(m => m.Role == "tool"))
+            {
+                _conversationManager.AddMessage(conversationId, new Message
+                {
+                    Role = message.Role,
+                    Content = message.Content,
+                    ToolCallId = message.ToolCallId,
+                    ToolName = message.ToolName
+                });
+            }
+        }
+
+        _conversationManager.AddMessage(conversationId, new Message
+        {
+            Role = "assistant",
+            Content = finalAssistantContent,
+            TokenCount = response.OutputTokens
+        });
+    }
+
+    private void AppendToolMessagesToUi(AIResponse response)
+    {
+        if (response.ResponseMessages == null || response.ResponseMessages.Count <= 1)
+        {
+            return;
+        }
+
+        var assistantMessage = Messages.LastOrDefault();
+        if (assistantMessage == null)
+        {
+            return;
+        }
+
+        foreach (var message in response.ResponseMessages.Where(m => m.Role == "tool"))
+        {
+            var toolMessage = new ChatMessage("tool", message.Content)
+            {
+                ToolCallId = message.ToolCallId,
+                ToolName = message.ToolName
+            };
+            Messages.Insert(Messages.Count - 1, toolMessage);
+        }
+    }
 }
 
 public partial class ChatMessage : ObservableObject
@@ -449,6 +519,12 @@ public partial class ChatMessage : ObservableObject
 
     [ObservableProperty]
     private int _tokenCount;
+
+    [ObservableProperty]
+    private string? _toolCallId;
+
+    [ObservableProperty]
+    private string? _toolName;
 
     public ChatMessage(string role, string content)
     {

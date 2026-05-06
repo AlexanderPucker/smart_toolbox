@@ -43,6 +43,25 @@ public class SearchResult
     public int Rank { get; set; }
 }
 
+public class KnowledgeAnswerSource
+{
+    public int Rank { get; set; }
+    public string DocumentTitle { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
+    public int ChunkIndex { get; set; }
+    public int StartPosition { get; set; }
+    public int TokenCount { get; set; }
+    public double Similarity { get; set; }
+    public string Preview { get; set; } = string.Empty;
+}
+
+public class KnowledgeAnswerResult
+{
+    public string Answer { get; set; } = string.Empty;
+    public List<KnowledgeAnswerSource> Sources { get; set; } = new();
+}
+
 public sealed class KnowledgeBaseService
 {
     private static readonly Lazy<KnowledgeBaseService> _instance = new(() => new KnowledgeBaseService());
@@ -98,6 +117,11 @@ public sealed class KnowledgeBaseService
             throw new FileNotFoundException($"文件不存在: {filePath}");
         }
 
+        if (!IsTextSupportedFile(filePath))
+        {
+            throw new NotSupportedException("当前仅支持导入文本类型文件（txt/md/json/cs/java/py/js/ts/log/csv/xml/yml/yaml）。");
+        }
+
         var content = await File.ReadAllTextAsync(filePath);
         var fileName = Path.GetFileName(filePath);
 
@@ -110,6 +134,7 @@ public sealed class KnowledgeBaseService
         };
 
         var chunks = SplitIntoChunks(content, document.Id);
+        await PopulateEmbeddingsAsync(chunks);
         document.ChunkCount = chunks.Count;
         document.TotalTokens = chunks.Sum(c => c.TokenCount);
 
@@ -119,6 +144,7 @@ public sealed class KnowledgeBaseService
         _allChunks.AddRange(chunks);
 
         await SaveChunksAsync(document.Id, chunks);
+        await SaveEmbeddingsAsync(document.Id, chunks);
         SaveDocumentsIndex();
 
         OnDocumentAdded?.Invoke(document);
@@ -136,6 +162,7 @@ public sealed class KnowledgeBaseService
         };
 
         var chunks = SplitIntoChunks(content, document.Id);
+        await PopulateEmbeddingsAsync(chunks);
         document.ChunkCount = chunks.Count;
         document.TotalTokens = chunks.Sum(c => c.TokenCount);
 
@@ -145,6 +172,7 @@ public sealed class KnowledgeBaseService
         _allChunks.AddRange(chunks);
 
         await SaveChunksAsync(document.Id, chunks);
+        await SaveEmbeddingsAsync(document.Id, chunks);
         SaveDocumentsIndex();
 
         OnDocumentAdded?.Invoke(document);
@@ -190,26 +218,33 @@ public sealed class KnowledgeBaseService
             .ToList();
     }
 
-    public List<SearchResult> SearchChunks(string query, int topK = 5)
+    public async Task<List<SearchResult>> SearchChunksAsync(string query, int topK = 5)
     {
         var results = new List<SearchResult>();
         var queryLower = query.ToLower();
         var queryKeywords = queryLower.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+        var queryEmbedding = await TryGenerateQueryEmbedding(query);
 
+        // 当前检索走“关键词分数 + 向量相似度”的混合排序，向量不可用时自动退化为关键词检索。
         foreach (var chunk in _allChunks)
         {
             var contentLower = chunk.Content.ToLower();
-            var score = 0.0;
+            var keywordScore = 0.0;
 
             foreach (var keyword in queryKeywords)
             {
                 if (contentLower.Contains(keyword))
                 {
-                    score += 1.0;
+                    keywordScore += 1.0;
                     var count = contentLower.Split(new[] { keyword }, StringSplitOptions.None).Length - 1;
-                    score += count * 0.1;
+                    keywordScore += count * 0.1;
                 }
             }
+
+            var semanticScore = queryEmbedding != null && chunk.Embedding != null
+                ? Math.Max(0, CosineSimilarity(queryEmbedding, chunk.Embedding))
+                : 0;
+            var score = keywordScore + semanticScore * 2.0;
 
             if (score > 0)
             {
@@ -238,7 +273,7 @@ public sealed class KnowledgeBaseService
 
     public async Task<string> QueryWithContextAsync(string query, int maxChunks = 3, int maxTokens = 2000)
     {
-        var searchResults = SearchChunks(query, maxChunks * 2);
+        var searchResults = await SearchChunksAsync(query, maxChunks * 2);
 
         if (searchResults.Count == 0)
         {
@@ -270,6 +305,22 @@ public sealed class KnowledgeBaseService
 
     public async Task<string> AskQuestionAsync(string question, int maxChunks = 3)
     {
+        var result = await AskQuestionWithSourcesAsync(question, maxChunks);
+        return result.Answer;
+    }
+
+    public async Task<KnowledgeAnswerResult> AskQuestionWithSourcesAsync(string question, int maxChunks = 3)
+    {
+        var searchResults = await SearchChunksAsync(question, maxChunks * 2);
+        if (searchResults.Count == 0)
+        {
+            return new KnowledgeAnswerResult
+            {
+                Answer = "未找到相关文档内容。",
+                Sources = new List<KnowledgeAnswerSource>()
+            };
+        }
+
         var context = await QueryWithContextAsync(question, maxChunks);
 
         var prompt = $@"基于以下文档内容回答问题。如果文档中没有相关信息，请说明。
@@ -281,7 +332,27 @@ public sealed class KnowledgeBaseService
 请提供准确、详细的回答：";
 
         var response = await _aiService.SendMessageAsync(prompt, "你是一个专业的知识库问答助手，擅长根据提供的文档内容准确回答问题。");
-        return response.Content;
+        return new KnowledgeAnswerResult
+        {
+            Answer = response.Content,
+            Sources = searchResults
+                .Take(maxChunks)
+                .Select(r => new KnowledgeAnswerSource
+                {
+                    Rank = r.Rank,
+                    DocumentTitle = r.Document.Title,
+                    ContentType = r.Document.ContentType,
+                    FilePath = r.Document.FilePath,
+                    ChunkIndex = r.Chunk.ChunkIndex,
+                    StartPosition = r.Chunk.StartPosition,
+                    TokenCount = r.Chunk.TokenCount,
+                    Similarity = r.Similarity,
+                    Preview = r.Chunk.Content.Length > 180
+                        ? r.Chunk.Content.Substring(0, 180) + "..."
+                        : r.Chunk.Content
+                })
+                .ToList()
+        };
     }
 
     private List<DocumentChunk> SplitIntoChunks(string content, Guid documentId)
@@ -377,6 +448,16 @@ public sealed class KnowledgeBaseService
         };
     }
 
+    private static bool IsTextSupportedFile(string filePath)
+    {
+        var extension = Path.GetExtension(filePath).ToLowerInvariant();
+        return extension switch
+        {
+            ".txt" or ".md" or ".json" or ".cs" or ".java" or ".py" or ".js" or ".ts" or ".log" or ".csv" or ".xml" or ".yml" or ".yaml" => true,
+            _ => false
+        };
+    }
+
     private void LoadDocumentsIndex()
     {
         try
@@ -409,6 +490,7 @@ public sealed class KnowledgeBaseService
                 var chunks = JsonSerializer.Deserialize<List<DocumentChunk>>(json);
                 if (chunks != null)
                 {
+                    LoadEmbeddingsForChunks(documentId, chunks);
                     _allChunks.AddRange(chunks);
                 }
             }
@@ -441,6 +523,109 @@ public sealed class KnowledgeBaseService
             await File.WriteAllTextAsync(chunkFile, json);
         }
         catch { }
+    }
+
+    private async Task PopulateEmbeddingsAsync(List<DocumentChunk> chunks)
+    {
+        var contents = chunks
+            .Select(c => c.Content)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .ToList();
+
+        if (contents.Count == 0)
+        {
+            return;
+        }
+
+        var response = await _aiService.GenerateEmbeddingsAsync(contents);
+        if (!response.IsSuccess || response.Embeddings.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < chunks.Count && i < response.Embeddings.Count; i++)
+        {
+            chunks[i].Embedding = response.Embeddings[i].Vector;
+        }
+    }
+
+    private async Task SaveEmbeddingsAsync(Guid documentId, List<DocumentChunk> chunks)
+    {
+        try
+        {
+            var embeddingFile = Path.Combine(_embeddingsPath, $"{documentId}.json");
+            var payload = chunks.Select(c => c.Embedding ?? Array.Empty<float>()).ToList();
+            var json = JsonSerializer.Serialize(payload);
+            await File.WriteAllTextAsync(embeddingFile, json);
+        }
+        catch { }
+    }
+
+    private void LoadEmbeddingsForChunks(Guid documentId, List<DocumentChunk> chunks)
+    {
+        try
+        {
+            var embeddingFile = Path.Combine(_embeddingsPath, $"{documentId}.json");
+            if (!File.Exists(embeddingFile))
+            {
+                return;
+            }
+
+            var json = File.ReadAllText(embeddingFile);
+            var embeddings = JsonSerializer.Deserialize<List<float[]>>(json);
+            if (embeddings == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < chunks.Count && i < embeddings.Count; i++)
+            {
+                chunks[i].Embedding = embeddings[i];
+            }
+        }
+        catch { }
+    }
+
+    private async Task<float[]?> TryGenerateQueryEmbedding(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return null;
+        }
+
+        var response = await _aiService.GenerateEmbeddingsAsync(new List<string> { query });
+        if (!response.IsSuccess || response.Embeddings.Count == 0)
+        {
+            return null;
+        }
+
+        return response.Embeddings[0].Vector;
+    }
+
+    private static double CosineSimilarity(float[] left, float[] right)
+    {
+        if (left.Length == 0 || right.Length == 0 || left.Length != right.Length)
+        {
+            return 0;
+        }
+
+        double dot = 0;
+        double leftNorm = 0;
+        double rightNorm = 0;
+
+        for (int i = 0; i < left.Length; i++)
+        {
+            dot += left[i] * right[i];
+            leftNorm += left[i] * left[i];
+            rightNorm += right[i] * right[i];
+        }
+
+        if (leftNorm == 0 || rightNorm == 0)
+        {
+            return 0;
+        }
+
+        return dot / (Math.Sqrt(leftNorm) * Math.Sqrt(rightNorm));
     }
 
     public void ClearAll()

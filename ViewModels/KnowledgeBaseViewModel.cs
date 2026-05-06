@@ -36,10 +36,17 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
     private string _answerOutput = string.Empty;
 
     [ObservableProperty]
+    private string _answerSourcesSummary = string.Empty;
+
+    [ObservableProperty]
     private KnowledgeDocumentItem? _selectedDocument;
+
+    [ObservableProperty]
+    private string _searchMode = "关键词检索（后续可扩展混合检索）";
 
     public ObservableCollection<KnowledgeDocumentItem> Documents { get; } = new();
     public ObservableCollection<SearchResultItem> SearchResults { get; } = new();
+    public ObservableCollection<AnswerSourceItem> AnswerSources { get; } = new();
 
     private readonly KnowledgeBaseService _knowledgeBase;
 
@@ -62,7 +69,10 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
                 ChunkCount = doc.ChunkCount,
                 TotalTokens = doc.TotalTokens,
                 AddedAt = doc.AddedAt,
-                Summary = doc.Summary ?? ""
+                UpdatedAt = doc.UpdatedAt,
+                Summary = doc.Summary ?? "",
+                ContentType = doc.ContentType,
+                FilePath = doc.FilePath
             });
             UpdateStats();
         });
@@ -98,7 +108,10 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
                     ChunkCount = doc.ChunkCount,
                     TotalTokens = doc.TotalTokens,
                     AddedAt = doc.AddedAt,
-                    Summary = doc.Summary ?? ""
+                    UpdatedAt = doc.UpdatedAt,
+                    Summary = doc.Summary ?? "",
+                    ContentType = doc.ContentType,
+                    FilePath = doc.FilePath
                 });
             }
 
@@ -130,6 +143,12 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
             StatusMessage = "文件不存在";
+            return;
+        }
+
+        if (!IsTextSupportedFile(filePath))
+        {
+            StatusMessage = "当前仅支持文本型文件导入（txt/md/json/cs/java/py/js/ts/log/csv/xml/yml/yaml）";
             return;
         }
 
@@ -188,7 +207,7 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Search()
+    private async Task SearchAsync()
     {
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
@@ -199,7 +218,7 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
         IsLoading = true;
         try
         {
-            var results = _knowledgeBase.SearchChunks(SearchQuery, 10);
+            var results = await _knowledgeBase.SearchChunksAsync(SearchQuery, 10);
             SearchResults.Clear();
 
             foreach (var result in results)
@@ -211,7 +230,8 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
                         ? result.Chunk.Content.Substring(0, 200) + "..."
                         : result.Chunk.Content,
                     Similarity = result.Similarity,
-                    Rank = result.Rank
+                    Rank = result.Rank,
+                    Source = BuildSearchSource(result)
                 });
             }
 
@@ -235,11 +255,28 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
         IsLoading = true;
         StatusMessage = "正在思考...";
         AnswerOutput = string.Empty;
+        AnswerSources.Clear();
+        AnswerSourcesSummary = string.Empty;
 
         try
         {
-            var answer = await _knowledgeBase.AskQuestionAsync(QuestionInput);
-            AnswerOutput = answer;
+            var answer = await _knowledgeBase.AskQuestionWithSourcesAsync(QuestionInput);
+            AnswerOutput = answer.Answer;
+
+            foreach (var source in answer.Sources)
+            {
+                AnswerSources.Add(new AnswerSourceItem
+                {
+                    Rank = source.Rank,
+                    DocumentTitle = source.DocumentTitle,
+                    Source = BuildAnswerSource(source),
+                    Preview = source.Preview
+                });
+            }
+
+            AnswerSourcesSummary = AnswerSources.Count > 0
+                ? $"命中来源 {AnswerSources.Count} 条"
+                : "未返回命中来源";
             StatusMessage = "回答完成";
         }
         catch (Exception ex)
@@ -259,8 +296,26 @@ public partial class KnowledgeBaseViewModel : ViewModelBase
         _knowledgeBase.ClearAll();
         Documents.Clear();
         SearchResults.Clear();
+        AnswerSources.Clear();
+        AnswerSourcesSummary = string.Empty;
         UpdateStats();
         StatusMessage = "已清空知识库";
+    }
+
+    private static bool IsTextSupportedFile(string filePath)
+    {
+        var ext = Path.GetExtension(filePath).ToLowerInvariant();
+        return ext is ".txt" or ".md" or ".json" or ".cs" or ".java" or ".py" or ".js" or ".ts" or ".log" or ".csv" or ".xml" or ".yml" or ".yaml";
+    }
+
+    private static string BuildSearchSource(SearchResult result)
+    {
+        return $"#{result.Rank} | {result.Document.ContentType} | chunk:{result.Chunk.ChunkIndex} | pos:{result.Chunk.StartPosition} | token:{result.Chunk.TokenCount}";
+    }
+
+    private static string BuildAnswerSource(KnowledgeAnswerSource source)
+    {
+        return $"#{source.Rank} | {source.ContentType} | chunk:{source.ChunkIndex} | sim:{source.Similarity:F2}";
     }
 }
 
@@ -271,7 +326,10 @@ public class KnowledgeDocumentItem
     public int ChunkCount { get; set; }
     public int TotalTokens { get; set; }
     public DateTime AddedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public string Summary { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
 }
 
 public class SearchResultItem
@@ -280,4 +338,13 @@ public class SearchResultItem
     public string Content { get; set; } = string.Empty;
     public double Similarity { get; set; }
     public int Rank { get; set; }
+    public string Source { get; set; } = string.Empty;
+}
+
+public class AnswerSourceItem
+{
+    public int Rank { get; set; }
+    public string DocumentTitle { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
+    public string Preview { get; set; } = string.Empty;
 }

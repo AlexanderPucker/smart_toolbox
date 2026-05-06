@@ -137,9 +137,103 @@ public sealed class AIService
 
         return await ExecuteWithRetryAsync(async () =>
         {
-            var request = BuildRequest(messages, systemPrompt, useModel, tools: tools);
+            var preparedMessages = _contextManager.PrepareMessagesForRequest(messages, systemPrompt, useModel);
+            var request = BuildRequest(preparedMessages, systemPrompt, useModel, tools: tools);
             return await SendRequestAsync(request, useModel, startTime, cancellationToken);
         }, cancellationToken);
+    }
+
+    public async Task<AIResponse> SendMessageWithToolLoopAsync(
+        List<Message> messages,
+        List<ToolDefinition> tools,
+        Func<string, string, Task<string>> toolExecutor,
+        string systemPrompt = "",
+        string? model = null,
+        int maxRounds = 6,
+        CancellationToken cancellationToken = default)
+    {
+        var useModel = model ?? _config.Model;
+        if (!IsConfigured())
+        {
+            return new AIResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = "请先在设置中配置API密钥"
+            };
+        }
+
+        if (!SupportsFunctionCalling(useModel))
+        {
+            return await SendMessageAsync(messages, systemPrompt, useModel, cancellationToken);
+        }
+
+        var conversation = messages.Select(CloneMessage).ToList();
+        var aggregateResponse = new AIResponse
+        {
+            Model = useModel,
+            Provider = Enum.Parse<AIProvider>(_modelRouter.GetProviderForModel(useModel)),
+            ResponseMessages = new List<Message>()
+        };
+
+        // 这里实现标准的 tool-calling 闭环：模型请求工具 -> 本地执行 -> 把结果回填给模型。
+        for (int round = 0; round < maxRounds; round++)
+        {
+            var startTime = DateTime.Now;
+            var preparedMessages = _contextManager.PrepareMessagesForRequest(conversation, systemPrompt, useModel);
+            var response = await ExecuteWithRetryAsync(async () =>
+            {
+                var request = BuildRequest(preparedMessages, systemPrompt, useModel, tools: tools);
+                return await SendRequestAsync(request, useModel, startTime, cancellationToken, publishEvent: false);
+            }, cancellationToken);
+
+            if (!response.IsSuccess)
+            {
+                return response;
+            }
+
+            aggregateResponse.InputTokens += response.InputTokens;
+            aggregateResponse.OutputTokens += response.OutputTokens;
+            aggregateResponse.EstimatedCost += response.EstimatedCost;
+            aggregateResponse.Duration += response.Duration;
+            aggregateResponse.Content = response.Content;
+
+            if (response.ResponseMessages != null)
+            {
+                foreach (var message in response.ResponseMessages)
+                {
+                    aggregateResponse.ResponseMessages!.Add(CloneMessage(message));
+                    conversation.Add(CloneMessage(message));
+                }
+            }
+
+            if (!response.IsToolCall || response.ToolCalls == null || response.ToolCalls.Count == 0)
+            {
+                aggregateResponse.IsSuccess = true;
+                OnResponseReceived?.Invoke(aggregateResponse);
+                return aggregateResponse;
+            }
+
+            foreach (var toolCall in response.ToolCalls)
+            {
+                var toolResult = await toolExecutor(toolCall.Function.Name, toolCall.Function.Arguments);
+                var toolMessage = new Message
+                {
+                    Role = "tool",
+                    Content = toolResult,
+                    ToolCallId = toolCall.Id,
+                    ToolName = toolCall.Function.Name
+                };
+                conversation.Add(toolMessage);
+                aggregateResponse.ResponseMessages!.Add(CloneMessage(toolMessage));
+            }
+        }
+
+        return new AIResponse
+        {
+            IsSuccess = false,
+            ErrorMessage = "工具调用轮次超过上限",
+            Model = useModel
+        };
     }
 
     public async Task<AIResponse> SendMessageWithVisionAsync(
@@ -166,6 +260,111 @@ public sealed class AIService
             var request = BuildVisionRequest(messages, systemPrompt, useModel);
             return await SendRequestAsync(request, useModel, startTime, cancellationToken);
         }, cancellationToken);
+    }
+
+    public async Task<EmbeddingResponse> GenerateEmbeddingsAsync(
+        List<string> inputs,
+        string? model = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsConfigured())
+        {
+            return new EmbeddingResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = "请先在设置中配置API密钥"
+            };
+        }
+
+        if (inputs.Count == 0)
+        {
+            return new EmbeddingResponse
+            {
+                IsSuccess = true,
+                Embeddings = new List<EmbeddingResult>()
+            };
+        }
+
+        var embeddingModel = model ?? GetDefaultEmbeddingModel();
+        if (string.IsNullOrEmpty(embeddingModel))
+        {
+            return new EmbeddingResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = "当前 Provider 未配置可用的 Embedding 模型"
+            };
+        }
+
+        var provider = _modelRouter.GetProviderForModel(_config.Model);
+        var endpoint = GetEmbeddingApiUrl(provider);
+        if (string.IsNullOrEmpty(endpoint))
+        {
+            return new EmbeddingResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = "当前 Provider 暂不支持 Embedding 接口"
+            };
+        }
+
+        var request = new EmbeddingRequest
+        {
+            Model = embeddingModel,
+            Input = inputs
+        };
+
+        try
+        {
+            var json = JsonSerializer.Serialize(request);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {GetApiKeyForProvider(provider)}");
+
+            var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new EmbeddingResponse
+                {
+                    IsSuccess = false,
+                    ErrorMessage = $"Embedding 请求失败 ({response.StatusCode}): {responseContent}",
+                    Model = embeddingModel
+                };
+            }
+
+            var doc = JsonDocument.Parse(responseContent);
+            var results = new List<EmbeddingResult>();
+            if (doc.RootElement.TryGetProperty("data", out var data))
+            {
+                foreach (var item in data.EnumerateArray())
+                {
+                    var vector = item.GetProperty("embedding")
+                        .EnumerateArray()
+                        .Select(v => v.GetSingle())
+                        .ToArray();
+                    results.Add(new EmbeddingResult
+                    {
+                        Index = item.TryGetProperty("index", out var index) ? index.GetInt32() : results.Count,
+                        Vector = vector
+                    });
+                }
+            }
+
+            return new EmbeddingResponse
+            {
+                IsSuccess = true,
+                Model = embeddingModel,
+                Embeddings = results.OrderBy(r => r.Index).ToList()
+            };
+        }
+        catch (Exception ex)
+        {
+            return new EmbeddingResponse
+            {
+                IsSuccess = false,
+                ErrorMessage = $"Embedding 请求异常: {ex.Message}",
+                Model = embeddingModel
+            };
+        }
     }
 
     private ChatCompletionRequest BuildRequest(
@@ -213,6 +412,48 @@ public sealed class AIService
                     { "content", content }
                 });
             }
+            // assistant/tool 两种消息需要保留函数调用上下文，后续轮次模型才能继续推理。
+            else if (msg.Role == "assistant" && msg.ToolCalls != null && msg.ToolCalls.Count > 0)
+            {
+                var assistantMessage = new Dictionary<string, object>
+                {
+                    { "role", msg.Role },
+                    { "tool_calls", msg.ToolCalls.Select(tc => new Dictionary<string, object>
+                        {
+                            { "id", tc.Id },
+                            { "type", tc.Type },
+                            { "function", new Dictionary<string, object>
+                                {
+                                    { "name", tc.Function.Name },
+                                    { "arguments", tc.Function.Arguments }
+                                }
+                            }
+                        }).ToList() }
+                };
+
+                if (!string.IsNullOrWhiteSpace(msg.Content))
+                {
+                    assistantMessage["content"] = msg.Content;
+                }
+
+                apiMessages.Add(assistantMessage);
+            }
+            else if (msg.Role == "tool")
+            {
+                var toolMessage = new Dictionary<string, object>
+                {
+                    { "role", msg.Role },
+                    { "content", msg.Content },
+                    { "tool_call_id", msg.ToolCallId ?? string.Empty }
+                };
+
+                if (!string.IsNullOrWhiteSpace(msg.ToolName))
+                {
+                    toolMessage["name"] = msg.ToolName;
+                }
+
+                apiMessages.Add(toolMessage);
+            }
             else
             {
                 apiMessages.Add(new Dictionary<string, object>
@@ -246,7 +487,8 @@ public sealed class AIService
         ChatCompletionRequest request,
         string model,
         DateTime startTime,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool publishEvent = true)
     {
         var provider = _modelRouter.GetProviderForModel(model);
         var apiUrl = GetApiUrlForProvider(provider);
@@ -278,7 +520,7 @@ public sealed class AIService
                 };
             }
 
-            return ParseResponse(responseContent, model, startTime);
+            return ParseResponse(responseContent, model, startTime, publishEvent);
         }
         catch (TaskCanceledException)
         {
@@ -401,7 +643,7 @@ public sealed class AIService
         }
     }
 
-    private AIResponse ParseResponse(string responseContent, string model, DateTime startTime)
+    private AIResponse ParseResponse(string responseContent, string model, DateTime startTime, bool publishEvent = true)
     {
         try
         {
@@ -410,7 +652,7 @@ public sealed class AIService
             var firstChoice = choices[0];
             var messageObj = firstChoice.GetProperty("message");
 
-            var content = messageObj.GetProperty("content").GetString() ?? "";
+            var content = messageObj.TryGetProperty("content", out var contentProp) ? contentProp.GetString() ?? "" : "";
 
             int inputTokens = 0, outputTokens = 0;
             if (resultDoc.RootElement.TryGetProperty("usage", out var usage))
@@ -437,7 +679,8 @@ public sealed class AIService
                 Provider = Enum.Parse<AIProvider>(provider),
                 EstimatedCost = cost,
                 Duration = duration,
-                IsSuccess = true
+                IsSuccess = true,
+                ResponseMessages = new List<Message>()
             };
 
             if (messageObj.TryGetProperty("tool_calls", out var toolCalls))
@@ -458,8 +701,20 @@ public sealed class AIService
                 }
             }
 
+            response.ResponseMessages.Add(new Message
+            {
+                Role = "assistant",
+                Content = content,
+                ToolCalls = response.ToolCalls?.Select(CloneToolCall).ToList(),
+                Timestamp = DateTime.Now,
+                TokenCount = outputTokens
+            });
+
             RecordUsage(model, inputTokens, outputTokens, duration);
-            OnResponseReceived?.Invoke(response);
+            if (publishEvent)
+            {
+                OnResponseReceived?.Invoke(response);
+            }
 
             return response;
         }
@@ -540,6 +795,62 @@ public sealed class AIService
         }
 
         return _config.ApiKey;
+    }
+
+    private string GetEmbeddingApiUrl(string provider)
+    {
+        var chatUrl = GetApiUrlForProvider(provider);
+        return provider switch
+        {
+            "OpenAI" or "DeepSeek" => chatUrl.Replace("/chat/completions", "/embeddings", StringComparison.OrdinalIgnoreCase),
+            _ => string.Empty
+        };
+    }
+
+    private string GetDefaultEmbeddingModel()
+    {
+        var provider = _modelRouter.GetProviderForModel(_config.Model);
+        return provider switch
+        {
+            "OpenAI" => "text-embedding-3-small",
+            "DeepSeek" => "text-embedding-3-small",
+            _ => string.Empty
+        };
+    }
+
+    private bool SupportsFunctionCalling(string model)
+    {
+        return _modelRouter.GetModelInfo(model)?.SupportsFunctionCalling == true;
+    }
+
+    private static Message CloneMessage(Message source)
+    {
+        return new Message
+        {
+            Role = source.Role,
+            Content = source.Content,
+            Images = source.Images,
+            ToolCalls = source.ToolCalls?.Select(CloneToolCall).ToList(),
+            Timestamp = source.Timestamp,
+            TokenCount = source.TokenCount,
+            IsPinned = source.IsPinned,
+            ToolCallId = source.ToolCallId,
+            ToolName = source.ToolName
+        };
+    }
+
+    private static ToolCall CloneToolCall(ToolCall source)
+    {
+        return new ToolCall
+        {
+            Id = source.Id,
+            Type = source.Type,
+            Function = new FunctionCall
+            {
+                Name = source.Function.Name,
+                Arguments = source.Function.Arguments
+            }
+        };
     }
 
     private void RecordUsage(string model, int inputTokens, int outputTokens, TimeSpan duration)

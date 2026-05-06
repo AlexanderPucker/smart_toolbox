@@ -14,9 +14,7 @@ public enum ExportFormat
     Json,
     Markdown,
     Html,
-    PlainText,
-    Pdf,
-    Word
+    PlainText
 }
 
 public enum ExportScope
@@ -97,14 +95,15 @@ public sealed class DataExportService
 
             if (options.CompressOutput)
             {
-                await CreateZipArchiveAsync(content, outputPath, options);
+                var zipPath = await CreateZipArchiveAsync(content, outputPath);
+                result.OutputPath = zipPath;
             }
             else
             {
                 await File.WriteAllTextAsync(outputPath, content);
             }
 
-            result.FileSizeBytes = new FileInfo(outputPath).Length;
+            result.FileSizeBytes = new FileInfo(result.OutputPath).Length;
             result.Success = true;
             result.Duration = DateTime.Now - startTime;
         }
@@ -139,13 +138,15 @@ public sealed class DataExportService
         ExportOptions options,
         ExportResult result)
     {
+        EnsureSupportedFormat(options.Format);
+
         return options.Format switch
         {
             ExportFormat.Json => await GenerateJsonAsync(conversations, options),
             ExportFormat.Markdown => await GenerateMarkdownAsync(conversations, options, result),
             ExportFormat.Html => await GenerateHtmlAsync(conversations, options),
             ExportFormat.PlainText => await GeneratePlainTextAsync(conversations, options),
-            _ => await GenerateMarkdownAsync(conversations, options, result)
+            _ => throw new NotSupportedException($"不支持的导出格式: {options.Format}")
         };
     }
 
@@ -170,7 +171,9 @@ public sealed class DataExportService
                         Content = options.Anonymize ? AnonymizeContent(m.Content) : m.Content,
                         Timestamp = options.IncludeTimestamps ? m.Timestamp : (DateTime?)null,
                         TokenCount = options.IncludeTokenCounts ? m.TokenCount : (int?)null,
-                        IsPinned = m.IsPinned
+                        IsPinned = m.IsPinned,
+                        ToolCallId = m.ToolCallId,
+                        ToolName = m.ToolName
                     }),
                 Metadata = options.IncludeMetadata ? new
                 {
@@ -259,6 +262,7 @@ public sealed class DataExportService
                 {
                     "user" => "👤 用户",
                     "assistant" => "🤖 助手",
+                    "tool" => "🛠️ 工具",
                     "system" => "⚙️ 系统",
                     _ => message.Role
                 };
@@ -268,6 +272,12 @@ public sealed class DataExportService
                 if (options.IncludeTimestamps)
                 {
                     sb.AppendLine($"*{message.Timestamp:yyyy-MM-dd HH:mm:ss}*");
+                    sb.AppendLine();
+                }
+
+                if (!string.IsNullOrWhiteSpace(message.ToolName))
+                {
+                    sb.AppendLine($"*工具: {message.ToolName}*");
                     sb.AppendLine();
                 }
 
@@ -344,6 +354,11 @@ public sealed class DataExportService
                 sb.AppendLine($"<div class=\"message {message.Role}\">");
                 sb.AppendLine($"<div class=\"role\">{message.Role}</div>");
 
+                if (!string.IsNullOrWhiteSpace(message.ToolName))
+                {
+                    sb.AppendLine($"<div class=\"timestamp\">工具: {EscapeHtml(message.ToolName)}</div>");
+                }
+
                 if (options.IncludeTimestamps)
                 {
                     sb.AppendLine($"<div class=\"timestamp\">{message.Timestamp:yyyy-MM-dd HH:mm:ss}</div>");
@@ -393,6 +408,11 @@ public sealed class DataExportService
             foreach (var message in messages)
             {
                 sb.AppendLine($"[{message.Role}]");
+
+                if (!string.IsNullOrWhiteSpace(message.ToolName))
+                {
+                    sb.AppendLine($"工具: {message.ToolName}");
+                }
 
                 if (options.IncludeTimestamps)
                 {
@@ -458,7 +478,7 @@ public sealed class DataExportService
         return Path.Combine(_exportDirectory, fileName);
     }
 
-    private async Task CreateZipArchiveAsync(string content, string outputPath, ExportOptions options)
+    private async Task<string> CreateZipArchiveAsync(string content, string outputPath)
     {
         var zipPath = outputPath.Replace(Path.GetExtension(outputPath), ".zip");
 
@@ -469,6 +489,18 @@ public sealed class DataExportService
         using var entryStream = entry.Open();
         using var writer = new StreamWriter(entryStream);
         await writer.WriteAsync(content);
+        return zipPath;
+    }
+
+    private static void EnsureSupportedFormat(ExportFormat format)
+    {
+        if (format != ExportFormat.Json &&
+            format != ExportFormat.Markdown &&
+            format != ExportFormat.Html &&
+            format != ExportFormat.PlainText)
+        {
+            throw new NotSupportedException($"不支持的导出格式: {format}");
+        }
     }
 
     private string EscapeMarkdown(string text)
