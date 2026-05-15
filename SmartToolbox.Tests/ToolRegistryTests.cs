@@ -57,4 +57,53 @@ public class ToolRegistryTests
         Assert.Contains(writeTools, tool => tool.Name == "write_file");
         Assert.All(writeTools, tool => Assert.Equal(ToolRiskLevel.Write, tool.RiskLevel));
     }
+
+    [Fact]
+    public async Task ExecuteToolAsync_WithDefaultPolicy_ShouldBlockRiskyTool()
+    {
+        var arguments = JsonSerializer.Serialize(new
+        {
+            query = "smart toolbox"
+        });
+
+        var result = await ToolRegistry.Instance.ExecuteToolAsync(
+            "search_web",
+            arguments,
+            ToolExecutionOptions.Default);
+
+        Assert.Contains("工具执行被阻止", result);
+        Assert.Contains("search_web", result);
+    }
+
+    [Fact]
+    public async Task ExecuteToolAsync_WithDefaultPolicy_ShouldAllowReadOnlyTool()
+    {
+        var arguments = JsonSerializer.Serialize(new
+        {
+            path = "missing-file.txt"
+        });
+
+        var result = await ToolRegistry.Instance.ExecuteToolAsync(
+            "read_file",
+            arguments,
+            ToolExecutionOptions.Default);
+
+        Assert.Contains("文件不存在", result);
+    }
+
+    [Fact]
+    public async Task ExecuteToolAsync_WithAllowAllPolicy_ShouldAllowRiskyTool()
+    {
+        var arguments = JsonSerializer.Serialize(new
+        {
+            query = "smart toolbox"
+        });
+
+        var result = await ToolRegistry.Instance.ExecuteToolAsync(
+            "search_web",
+            arguments,
+            ToolExecutionOptions.AllowAll);
+
+        Assert.Contains("需要配置搜索引擎API", result);
+    }
 }
