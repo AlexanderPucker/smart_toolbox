@@ -16,6 +16,19 @@ public enum ToolRiskLevel
     Dangerous
 }
 
+public sealed class ToolExecutionOptions
+{
+    public static ToolExecutionOptions Default { get; } = new();
+    public static ToolExecutionOptions AllowAll { get; } = new()
+    {
+        AllowRiskyTools = true,
+        MaxAutoExecuteRiskLevel = ToolRiskLevel.Dangerous
+    };
+
+    public bool AllowRiskyTools { get; init; }
+    public ToolRiskLevel MaxAutoExecuteRiskLevel { get; init; } = ToolRiskLevel.ReadOnly;
+}
+
 public interface ITool
 {
     string Name { get; }
@@ -106,16 +119,28 @@ public sealed class ToolRegistry
         return definitions;
     }
 
-    public async Task<string> ExecuteToolAsync(string name, string arguments)
+    public Task<string> ExecuteToolAsync(string name, string arguments)
+    {
+        return ExecuteToolAsync(name, arguments, ToolExecutionOptions.AllowAll);
+    }
+
+    public async Task<string> ExecuteToolAsync(string name, string arguments, ToolExecutionOptions options)
     {
         if (!_tools.TryGetValue(name, out var tool))
         {
             return $"错误: 未找到工具 '{name}'";
         }
 
+        options ??= ToolExecutionOptions.Default;
+
         if (RequiresConfirmation(tool.RiskLevel))
         {
             OnRiskyToolExecutionRequested?.Invoke(tool, arguments);
+        }
+
+        if (!options.AllowRiskyTools && tool.RiskLevel > options.MaxAutoExecuteRiskLevel)
+        {
+            return $"工具执行被阻止: '{name}' 的风险等级为 {tool.RiskLevel}，需要用户确认后才能执行。";
         }
 
         try
