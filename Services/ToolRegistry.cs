@@ -1,14 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SmartToolbox.Services;
 
+public enum ToolRiskLevel
+{
+    Safe,
+    ReadOnly,
+    Network,
+    Write,
+    Execute,
+    Dangerous
+}
+
 public interface ITool
 {
     string Name { get; }
     string Description { get; }
+    ToolRiskLevel RiskLevel { get; }
     ToolDefinition GetDefinition();
     Task<string> ExecuteAsync(string arguments);
 }
@@ -22,6 +34,7 @@ public sealed class ToolRegistry
 
     public event Action<ITool>? OnToolRegistered;
     public event Action<string, string, string>? OnToolExecuted;
+    public event Action<ITool, string>? OnRiskyToolExecutionRequested;
 
     private ToolRegistry()
     {
@@ -58,9 +71,29 @@ public sealed class ToolRegistry
         return _tools.GetValueOrDefault(name);
     }
 
+    public ToolRiskLevel? GetToolRiskLevel(string name)
+    {
+        return _tools.TryGetValue(name, out var tool) ? tool.RiskLevel : null;
+    }
+
+    public bool RequiresConfirmation(string name)
+    {
+        return _tools.TryGetValue(name, out var tool) && RequiresConfirmation(tool.RiskLevel);
+    }
+
+    public static bool RequiresConfirmation(ToolRiskLevel riskLevel)
+    {
+        return riskLevel is ToolRiskLevel.Network or ToolRiskLevel.Write or ToolRiskLevel.Execute or ToolRiskLevel.Dangerous;
+    }
+
     public List<ITool> GetAllTools()
     {
         return new List<ITool>(_tools.Values);
+    }
+
+    public List<ITool> GetToolsByRisk(ToolRiskLevel riskLevel)
+    {
+        return _tools.Values.Where(tool => tool.RiskLevel == riskLevel).ToList();
     }
 
     public List<ToolDefinition> GetAllToolDefinitions()
@@ -78,6 +111,11 @@ public sealed class ToolRegistry
         if (!_tools.TryGetValue(name, out var tool))
         {
             return $"错误: 未找到工具 '{name}'";
+        }
+
+        if (RequiresConfirmation(tool.RiskLevel))
+        {
+            OnRiskyToolExecutionRequested?.Invoke(tool, arguments);
         }
 
         try
@@ -102,6 +140,7 @@ public class CalculateHashTool : ITool
 {
     public string Name => "calculate_hash";
     public string Description => "计算文本或文件的哈希值（支持MD5、SHA1、SHA256等算法）";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -158,6 +197,7 @@ public class FormatJsonTool : ITool
 {
     public string Name => "format_json";
     public string Description => "格式化JSON字符串，使其更易读";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -206,6 +246,7 @@ public class Base64EncodeTool : ITool
 {
     public string Name => "base64_encode";
     public string Description => "将文本编码为Base64格式";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -250,6 +291,7 @@ public class Base64DecodeTool : ITool
 {
     public string Name => "base64_decode";
     public string Description => "将Base64格式解码为文本";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -294,6 +336,7 @@ public class GenerateUuidTool : ITool
 {
     public string Name => "generate_uuid";
     public string Description => "生成UUID/GUID";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -354,6 +397,7 @@ public class ConvertTimestampTool : ITool
 {
     public string Name => "convert_timestamp";
     public string Description => "转换Unix时间戳与日期时间";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -416,6 +460,7 @@ public class CalculateExpressionTool : ITool
 {
     public string Name => "calculate_expression";
     public string Description => "计算数学表达式";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Safe;
 
     public ToolDefinition GetDefinition()
     {
@@ -461,6 +506,7 @@ public class SearchWebTool : ITool
 {
     public string Name => "search_web";
     public string Description => "搜索网络获取信息（模拟）";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Network;
 
     public ToolDefinition GetDefinition()
     {
@@ -497,6 +543,7 @@ public class ReadFileTool : ITool
 {
     public string Name => "read_file";
     public string Description => "读取文件内容";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.ReadOnly;
 
     public ToolDefinition GetDefinition()
     {
@@ -545,6 +592,7 @@ public class WriteFileTool : ITool
 {
     public string Name => "write_file";
     public string Description => "写入内容到文件";
+    public ToolRiskLevel RiskLevel => ToolRiskLevel.Write;
 
     public ToolDefinition GetDefinition()
     {
